@@ -1,0 +1,6 @@
+# Vim swp files
+*.swp
+*.pyc
+*.txt
+gzip-*
+tee-*
