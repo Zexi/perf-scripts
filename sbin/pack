@@ -32,12 +32,11 @@ usage()
 		$ pack -a my_arch -c my_program
 		Output: /tmp/perf-test/benchmarks/my_program/
 		Output: /tmp//perf-test/benchmarks/my_program-my_arch.cgz
-		Output: inn:/lkp/benchmarks/my_program-my_arch.cgz
 
 		$ pack -d debian my_program
 		Output: /tmp/my_program/
-		Output: /tmp/my-program-LKP/
-		Output: /tmp/my-program-LKP.deb
+		Output: /tmp/my-program-PS/
+		Output: /tmp/my-program-PS.deb
 		Output: /tmp/perf-test/benchmarks/my_program/
 
 	EOF
