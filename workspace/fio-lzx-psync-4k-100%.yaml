@@ -1,0 +1,8 @@
+---
+testcase: fio-vm
+category: benchmark
+fio:
+  ioengine: psync
+  bs: 4k
+  size: 100%
+enqueue_time: 2016-03-04 19:11:04.442731119 +08:00

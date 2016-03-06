@@ -1,0 +1,28 @@
+#!/bin/sh
+# - interval
+
+file=$(basename $0)
+file=${file#proc-}
+
+[ -f /proc/$file ] || exit
+
+take_snapshot()
+{
+	echo time: $(date +%s.%N)
+	cat /proc/$file
+}
+
+. $SRC/lib/wait.sh
+setup_wait
+
+if [ -n "$interval" ]; then
+	while :
+	do
+		take_snapshot
+		wait_timeout $interval
+	done
+else
+	take_snapshot
+	wait_post_test
+	take_snapshot
+fi

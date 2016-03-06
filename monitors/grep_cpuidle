@@ -1,0 +1,8 @@
+#!/bin/sh
+
+. $SRC/lib/wait.sh
+setup_wait
+
+wait_post_test
+
+grep . /sys/devices/system/cpu/cpu*/cpuidle/*/*

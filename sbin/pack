@@ -1,0 +1,89 @@
+#!/bin/bash
+
+[[ $SRC ]] || export SRC="$(dirname $(dirname $(readlink -e -v $0)))"
+
+usage()
+{
+	cat <<-EOF
+
+		Provides $0 to generate locally and support upload to server the customized installation of external programs and/or system packages. The generated package could be in .cgz(default) or .deb(-d option) formats.
+		$SRC/pack/default implements default behavior of $0.
+		Based on $SRC/pack/default, a script is named after an external program, and overrides default implementation of download(), build(), and install() functions.
+		The script named after an external program works in conjunction with $0
+
+		Usage: $0 [-a <arch>] [-c] [-d <distro>] <BM_NAME>
+
+		[-a <arch>]       Optional parameter: specific architecture of <BM_NAME>, used as suffixe in .cgz file name, overrides default value.
+		[-c]              Optional parameter: work environment is cleaned up after execution.
+		[-d <distro>]     Optional parameter: If specified, will generates customized installation in .deb/.rpm format (default is .cgz format) for <BM_NAME> - simplifies later installation on debian systems.
+		[-s <dest>]       Optional parameter: If specified, will sync generated package to destination given.
+		<BM_NAME>         Mandatory parameter: generates customized installation package for <BM_NAME>, default architecture of the compiling machine is used as suffixe in .cgz file name
+
+		Note:
+		[-a <arch>] and [-d <distro>] optional parameters do not work together, and <arch> cannot be used as suffixe in .deb file name.
+
+		Examples:
+		$ pack my_program
+		Output: /tmp/my_program/
+		Output: /tmp/perf-test/benchmarks/my_program/
+		Output: /tmp/perf-test/benchmarks/my_program-<default_arch>.cgz
+		Output: server:/some_path/benchmarks/my_program-<default_arch>.cgz
+
+		$ pack -a my_arch -c my_program
+		Output: /tmp/perf-test/benchmarks/my_program/
+		Output: /tmp//perf-test/benchmarks/my_program-my_arch.cgz
+		Output: inn:/lkp/benchmarks/my_program-my_arch.cgz
+
+		$ pack -d debian my_program
+		Output: /tmp/my_program/
+		Output: /tmp/my-program-LKP/
+		Output: /tmp/my-program-LKP.deb
+		Output: /tmp/perf-test/benchmarks/my_program/
+
+	EOF
+	exit 1
+}
+
+install_required_packages()
+{
+	local required_packs
+	if [ -f $1 ]; then
+		required_packs=$(cat $1)
+		apt-get install -y $required_packs
+	fi
+}
+
+while getopts "a:cd:s:" opt
+do
+	case $opt in
+	a ) arch="$OPTARG" ;;
+	c ) opt_clean=true ;;
+	d ) distro="$OPTARG" ;;
+	s ) sync_dest="$OPTARG" ;;
+	? ) usage ;;
+	esac
+done
+
+shift $(($OPTIND-1))
+BM_NAME=$1;
+
+[[ $BM_NAME ]] || usage
+BM_ROOT=/tmp/perf-test/benchmarks/$BM_NAME
+
+[[ $arch ]] || arch=`uname -m`
+
+source $SRC/pack/default
+source $SRC/pack/$BM_NAME
+
+rm -fr "$BM_ROOT"
+mkdir -p $BM_ROOT
+
+cd /tmp
+download
+build
+install
+pack_pkg $distro
+
+#[[ -n $sync_dest ]] && rsync -av /tmp/perf-test/benchmarks/${BM_NAME}-${arch}.cgz $sync_dest/${BM_NAME}-${arch}.cgz
+
+[[ $opt_clean ]] && cleanup

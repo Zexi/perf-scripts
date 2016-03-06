@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# skip if cpu doesn't have msr
+grep flags /proc/cpuinfo|grep -q ' msr ' || exit 0
+
+# skip unreliable machines
+#[ "${HOSTNAME#*lkp-a0[1-9]}"	!= "$HOSTNAME" ] && exit 0
+#[ "${HOSTNAME#*snb-drag}"	!= "$HOSTNAME" ] && exit 0
+
+cd $BENCHMARK_ROOT/turbostat || exit
+
+if [ ! -c /dev/cpu/0/msr ]; then
+	modprobe msr 2>&1 || exit
+
+	if [ ! -c /dev/cpu/0/msr ]; then
+		echo "/dev/cpu/0/msr not available"
+		exit
+	fi
+fi
+
+[ $# -ge 1 ] && exec ./turbostat "$@" 2>&1
+
+. $SRC/lib/wait.sh
+setup_wait
+
+exec ./turbostat -v $WAIT_POST_TEST_CMD 2>&1

@@ -1,0 +1,21 @@
+testcase: unixbench
+category: benchmark
+
+nr_task:
+  - 1
+  - 100%
+
+unixbench:
+  test:
+  - whetstone-double
+  - shell1
+  - shell8
+  - execl
+  - pipe
+  - context1
+  - spawn
+  - syscall
+  - dhry2reg
+  - fstime
+  - fsbuffer
+  - fsdisk

@@ -1,0 +1,10 @@
+#!/bin/sh
+# - test
+
+cd $BENCHMARK_ROOT/unixbench || exit
+
+export LANG=C
+
+cmd ./Run $test || exit
+
+copy-results $BENCHMARK_ROOT/unixbench/results/*

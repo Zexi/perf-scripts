@@ -1,0 +1,17 @@
+#!/bin/sh
+# - interval
+
+file=$(basename $0)
+file=${file#proc-}
+
+[ -f /proc/$file ] || exit
+
+. $SRC/lib/wait.sh
+setup_wait
+
+while :
+do
+	echo time: $(date +%s.%N)
+	cat /proc/$file
+	wait_timeout $interval
+done

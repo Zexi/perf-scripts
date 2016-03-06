@@ -1,0 +1,67 @@
+#!/usr/bin/env ruby
+
+SRC = File.dirname(File.dirname File.realpath $PROGRAM_NAME)
+
+require "#{SRC}/lib/job.rb"
+require 'optparse'
+require 'ostruct'
+
+#For debug
+require 'pry'
+
+$opt_output_path = '.'
+$opt_set_key_value = {}
+
+option_parser = OptionParser.new do |opts|
+  opts.banner = "Usage: merge-job.rb [options] jobs..."
+
+  opts.on("-o PATH", "--output PATH", "output path") do |path|
+    if File.directory? path
+      $opt_output_path = path
+    else
+      STDERR.puts "#{path}: no such directory"
+      exit
+    end
+  end
+
+  opts.on("--no-defaults", "do not load the defaults headers") do
+    $opt_no_defaults = true
+  end
+
+  opts.on_tail("-h", "--help", "show this message") do
+    puts option_parser
+    exit
+  end
+end
+
+option_parser.parse!(ARGV)
+
+if ARGV.size == 0
+  puts option_parser
+  exit
+end
+
+$opt_testbox ||= `hostname`.chomp
+$atom_jobs = []
+
+ARGV.each { |jobfile|
+  jobs = Job.new
+
+
+  unless $opt_no_defaults
+    jobs.load_head("#{SRC}/jobs/DEFAULTS")
+  end
+  jobs.load(jobfile) or next
+  $opt_set_key_value.each { |k, v| jobs[k] = v }
+  jobs['enqueue_time'] = Time.now
+  prefix = $opt_output_path + '/' + File.basename(jobfile, '.yaml')
+  binding.pry
+  jobs.each_jobs { |job|
+    unit_jobfile = prefix + '-' + job.path_params
+    unit_jobfile += '-' + job['commit'] if job['commit']
+    unit_jobfile += '.yaml'
+    job.save unit_jobfile
+    puts "#{jobfile} => #{unit_jobfile}"
+  }
+}
+

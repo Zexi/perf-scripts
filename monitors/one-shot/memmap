@@ -1,0 +1,10 @@
+#!/bin/sh
+
+for m in /sys/firmware/memmap/*
+do
+	[ -e "$m" ] || exit 0
+	read start	< $m/start
+	read end	< $m/end
+	read type	< $m/type
+	echo "${m##*/},$start,$end,$(( end - start + 1 )),$type"
+done

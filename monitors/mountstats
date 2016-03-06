@@ -1,0 +1,13 @@
+#!/bin/sh
+
+[ "${fs#*nfs}" != "$fs" ] || exit 0
+
+. $SRC/lib/wait.sh
+setup_wait
+
+while :
+do
+	echo time: $(date +%s.%N)
+	cat /proc/self/mountstats
+	wait_timeout $interval
+done

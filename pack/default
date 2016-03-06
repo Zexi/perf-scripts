@@ -1,0 +1,138 @@
+#!/bin/bash
+
+. $SRC/lib/git.sh
+
+pre_download()
+{
+	:
+}
+
+download()
+{
+	pre_download
+	[[ $WEB_URL ]] && wget --no-clobber $WEB_URL
+	[[ $source_package ]] || source_package=$(basename $WEB_URL)
+	[[ $source_dir     ]] || source_dir=${source_package%%.tar.*}
+	[[ -d $source_dir ]] ||
+	tar xf "$source_package"
+}
+
+patch_source()
+{
+	PATCH=$SRC/pack/${BM_NAME}.patch
+	[[ -f $PATCH ]] || return 0
+	patch -p1 < $PATCH
+}
+
+build()
+{
+	cd "$source_dir"
+	patch_source
+	[[ -x "./configure" ]] && ./configure $CONFIGURE_FLAGS
+	if [[ -f 'Makefile' ]]; then
+		make
+	fi
+}
+
+install()
+{
+	if [[ -f 'Makefile' ]]; then
+		make install-exec
+	fi
+}
+
+pack_deb()
+{
+	mkdir -p /tmp/$pkg_name/$BM_ROOT
+	cp -af $BM_ROOT /tmp/$pkg_name/lkp/benchmarks
+	mkdir -p /tmp/$pkg_name/DEBIAN
+	cat > /tmp/$pkg_name/DEBIAN/control <<-EOF
+	Package: $pkg_name
+	Version: $(date +%F)
+	Architecture: all
+	Maintainer: Zexi
+	Description: Zexi's perf-scripts dependent packages
+	EOF
+
+	cd /tmp
+	dpkg-deb --build $pkg_name
+}
+
+pack_rpm()
+{
+	mkdir -p /tmp/$pkg_name/{BUILD,RPMS,S{OURCE,PEC,RPM}S}
+	cat > /tmp/$pkg_name/SPECS/$pkg_name.spec <<-EOF
+	Name: $pkg_name
+	Version: 1
+	License: None
+	Packager: Zexi
+	Release: 1
+	Summary: Zexi's perf-scripts dependent packages
+
+	%description
+	perf-scripts benchmarks rpm package
+
+	%install
+	# create directories where the files will be located
+	mkdir -p \$RPM_BUILD_ROOT/$BM_ROOT
+	# put the files in the relevant directories
+	cp -a $BM_ROOT/* \$RPM_BUILD_ROOT/$BM_ROOT
+
+	%files
+	%defattr(-,root,root)
+	$BM_ROOT/*
+	EOF
+
+	cat > /tmp/$pkg_name/.rpmmacros <<-EOF
+	%_topdir /tmp/$pkg_name
+	%_rpmfilename %%{NAME}.%%{ARCH}.rpm
+	EOF
+
+	(
+		export HOME=/tmp/$pkg_name
+		rpmbuild -bb --verbose /tmp/$pkg_name/SPECS/$pkg_name.spec
+	)
+}
+
+pack()
+{
+	{
+        echo /tmp
+		echo /tmp/perf-test/
+		echo /tmp/perf-test/benchmarks
+		echo /tmp/perf-test/benchmarks/$BM_NAME
+		find /tmp/perf-test/benchmarks/$BM_NAME/*
+	} |
+	cpio -o -H newc --owner=root.root | gzip -n -9 > /tmp/perf-test/benchmarks/${BM_NAME}.cgz
+	[[ $arch ]] && mv "/tmp/perf-test/benchmarks/${BM_NAME}.cgz" "/tmp/perf-test/benchmarks/${BM_NAME}-${arch}.cgz"
+}
+
+pack_pkg()
+{
+	local distro=$1
+	local pkg_name="${BM_NAME//_/-}-ps"
+
+	rm -fr "/tmp/$pkg_name"
+    pack
+
+#	case $distro in
+#		debian|ubuntu)
+#			pack_deb ;;
+#		fedora|centos)
+#			pack_rpm ;;
+#		*)
+#			pack ;;
+#	esac
+}
+
+post_cleanup()
+{
+	:
+}
+
+cleanup()
+{
+	[[ $source_package ]] && rm -f  "/tmp/${source_package}"
+	[[ $source_dir     ]] && rm -fr "/tmp/${source_dir}"
+	post_cleanup
+}

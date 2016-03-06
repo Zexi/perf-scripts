@@ -1,0 +1,28 @@
+testcase: DEFAULTS
+
+default-monitors:
+  wait: pre-test
+  uptime:
+  iostat:
+  vmstat:
+  numa-numastat:
+  numa-vmstat:
+  numa-meminfo:
+  proc-vmstat:
+  proc-stat:
+    interval: 10
+  meminfo:
+  slabinfo:
+  interrupts:
+  lock_stat:
+  latency_stats:
+  softirqs:
+  bdi_dev_mapping:
+  diskstats:
+  nfsstat:
+  cpuidle:
+  cpufreq-stats:
+  turbostat:
+  pmeter:
+  sched_debug:
+    interval: 60

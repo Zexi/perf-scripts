@@ -1,0 +1,30 @@
+#!/bin/sh
+# - runtime
+# - rw
+# - bs
+# - ioengine
+# - fallocate
+# - sub_group_number
+# - group_file_number
+
+echo runtime=$runtime
+echo rw=$rw
+echo bs=$bs
+echo ioengine=$ioengine
+echo fallocate=$fallocate
+
+: ${bs:=4k}
+: ${fallocate:=posix}
+
+export blocksize=$bs
+
+if [ -z "$jobfile" ]; then
+	. $(dirname $0)/$testcase
+fi
+
+copy-results $jobfile
+
+# Clean memory cached
+free && sync && echo 3 > /proc/sys/vm/drop_caches && free
+
+cmd fio "$RESULT_ROOT/results/$jobfile"

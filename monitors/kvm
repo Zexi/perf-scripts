@@ -1,0 +1,15 @@
+#!/bin/sh
+
+cd /sys/kernel/debug/kvm || exit 0
+
+. $SRC/lib/wait.sh
+setup_wait
+
+while :
+do
+	echo time: $(date +%s.%N)
+
+	grep . * | sed 's/:/: /'
+
+	wait_timeout $interval
+done

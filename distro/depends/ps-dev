@@ -1,0 +1,10 @@
+gcc-c++
+libXext-devel
+make
+automake
+gcc
+libtool
+patch
+git
+cpio
+wget

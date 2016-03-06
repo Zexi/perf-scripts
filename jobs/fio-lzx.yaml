@@ -1,0 +1,8 @@
+testcase: fio-vm
+category: benchmark
+
+fio:
+  ioengine:
+  - psync
+  bs: 4k
+  size: 100%

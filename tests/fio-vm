@@ -1,0 +1,36 @@
+#!/bin/bash
+
+: ${runtime:=30}
+
+jobfile=fio_vm_${ioengine}_${blocksize}
+[ "${jobfile#*__}" != "$jobfile" ] && {
+    echo "error composing $jobfile: missing options" >&2
+    exit 1
+}
+
+cat > $jobfile <<EOF
+[global]
+runtime=$runtime
+direct=1
+ioengine=$ioengine
+blocksize=$blocksize
+numjobs=1
+iodepth=1
+filename=/dev/vdc1
+
+[seq-read]
+rw=read
+stonewall
+
+[rand-read]
+rw=randread
+stonewall
+
+[seq-write]
+rw=write
+stonewall
+
+[rand-write]
+rw=randwrite
+stonewall
+EOF

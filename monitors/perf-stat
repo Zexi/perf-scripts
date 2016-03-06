@@ -1,0 +1,26 @@
+#!/bin/sh
+# - events
+# - time
+# - command
+
+# perf may consume lots of fd
+ulimit -n 102400
+
+[ -n "$events" ] || events='hardware cache software'
+events=$(perf-events $events)
+[ -n "$events" ] || exit
+
+opt_events="-e $(echo $events | sed 's/ / -e /g')"
+
+[ -n "$command" ] || {
+	. $SRC/lib/wait.sh
+	setup_wait
+
+	if [ -n "$time" ]; then
+		command="$WAIT_POST_TEST_CMD --timeout $time"
+	else
+		command="$WAIT_POST_TEST_CMD"
+	fi
+}
+
+exec perf stat -a -x' ' $opt_events -o $RESULT_ROOT/$(basename $0) -- $command

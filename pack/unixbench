@@ -1,0 +1,24 @@
+#!/bin/bash
+
+download()
+{
+    [ -d '/tmp/byte-unixbench' ] && rm -rf /tmp/byte-UnixBench
+    git_clone_update https://github.com/kdlucas/byte-unixbench.git
+    source_dir="/tmp/byte-unixbench/UnixBench"
+}
+
+build()
+{
+    cd $source_dir
+    make
+}
+
+install()
+{
+#	cp -af Run $BM_ROOT
+#	cp -avf pgms $BM_ROOT
+#	cp -avf testdir $BM_ROOT
+#	mkdir $BM_ROOT/results
+#    cp -af $BM_NAME $BM_ROOT
+    cp -avf * $BM_ROOT
+}
