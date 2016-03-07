@@ -15,7 +15,7 @@ direct=1
 ioengine=$ioengine
 blocksize=$blocksize
 numjobs=1
-iodepth=1
+iodepth=64
 filename=/dev/vdc1
 
 [seq-read]
