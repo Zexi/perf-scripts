@@ -6,8 +6,6 @@ import datetime
 import os
 import subprocess as subps
 
-import ipdb
-
 class FIOError(Exception): 
     pass
 
@@ -71,5 +69,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    ipdb.set_trace()
     fio_test(args.file, args.size, args.mode, args.bs, args.depth, args.ioengine, args.runtime)

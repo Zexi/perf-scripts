@@ -12,8 +12,6 @@ import job
 import pytz
 from datetime import datetime
 
-#import ipdb
-
 def unify_time(tz):
     timezone = pytz.timezone(tz)
     return timezone.normalize(pytz.utc.localize(datetime.utcnow()).astimezone(timezone))
@@ -31,7 +29,6 @@ if len(sys.argv) == 1:
     sys.exit(1)
 
 args = parser.parse_args()
-print args
 
 output_path = args.output
 if not output_path:
@@ -56,7 +53,6 @@ for jobfile in args.jobs:
     jobs = job.Job()
 
     #if args.no_defaults == "no":
-    #ipdb.set_trace()
     #jobs.load_head("%s/jobs/DEFAULTS" % SRC)
 
     jobs.load(jobfile)

@@ -7,8 +7,6 @@ import yaml
 import shellwords
 import datetime
 
-import ipdb
-
 SHELL_BLOCK_KEYWORDS = {
     "if": ['then', 'fi'], 
     "for": ['do', 'done'],
@@ -238,7 +236,6 @@ class Job2sh(object):
             #self.exec_line(self.indent(ancestors) + "wait")
 
     def job2sh(self, job_obj, out_script=sys.stdout):
-        #ipdb.set_trace()
         if 'params' not in job_obj:
             self.job_params = {}
         else:

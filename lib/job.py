@@ -6,8 +6,6 @@ import types
 import shutil
 import commands
 
-import ipdb
-
 SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 
 def __create_programs_hash(dir_list, src):
@@ -97,7 +95,6 @@ class Job(dict):
                 if line:
                     type1, name = line.split()
                     self.program_options[name] = type1
-                    print 'self.program_options: name: %s type: %s' % (name, type1)
 
         for_each_in(self.job, self.programs, program_options_func)
 
@@ -125,7 +122,6 @@ class Job(dict):
 
     def each_jobs(self, func):
         self.each_job_init()
-        #ipdb.set_trace()
         self.each_job(func)
 
     def each_param(self, func):

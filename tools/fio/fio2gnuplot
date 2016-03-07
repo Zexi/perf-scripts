@@ -27,7 +27,6 @@ import re
 import math
 import shutil
 
-import ipdb
 
 def find_file(path, pattern):
 	fio_data_file=[]
@@ -516,5 +515,4 @@ def main(argv):
 
 #Main
 if __name__ == "__main__":
-    ipdb.set_trace()
     sys.exit(main(sys.argv))
