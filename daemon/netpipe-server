@@ -1,0 +1,8 @@
+#!/bin/sh
+# - test
+
+case $test in
+tcp )
+	NPtcp &
+	;;
+esac
