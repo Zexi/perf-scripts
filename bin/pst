@@ -1,0 +1,49 @@
+#!/bin/bash
+
+[ -n "$SRC" ] || export SRC=$(dirname $(dirname $(readlink -e -v $0)))
+
+show_help()
+{
+    cat <<EOF
+Usage: pst <command> [options]
+$(cat $SRC/doc/command-index/*)
+
+EOF
+}
+
+[ $# = 0 -o "$*" = 'help' ] && {
+    show_help
+    exit 0
+}
+
+pst_command="$1"
+pst_args=
+shift
+
+if [ "pst_command" = 'help' ]; then
+    pst_command="$1"
+    pst_args='--help'
+    shift
+fi
+
+case "$pst_command" in
+    'install')  pst_command='install'   ;;
+    'split')    pst_command='split-job' ;;
+    'compile')  pst_command='job2sh'    ;;
+    'run')      pst_command='run-local' ;;
+esac
+
+try_run()
+{
+    local subdir="$1"
+    local path="$SRC/$subdir/$pst_command"
+    shift
+
+    [ -x "$path" ] && exec "$path" $pst_args "$@"
+}
+
+try_run 'bin'   "$@"
+try_run 'sbin'   "$@"
+
+echo "Cannot find command under $SRC/{bin,sbin}/"
+exit 1
