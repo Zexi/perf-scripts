@@ -31,9 +31,9 @@ do
 #            ssd_partitions=$2
 #            shift
 #            ;;
-#        --dry-run)
-#            DRY_RUN=0
-#            ;;
+        --dry-run)
+            DRY_RUN=0
+            ;;
         *)
             break
             ;;
@@ -51,7 +51,7 @@ make_wakeup() {
 }
 
 create_package_dir() {
-    [ -n "$DRY_RUN"] && return
+    [ -n "$DRY_RUN" ] && return
 
     mkdir -p $TMP
     mkdir -p '/tmp/perf-test/paths'
@@ -59,19 +59,19 @@ create_package_dir() {
 }
 
 create_host_config() {
-    [ -n "$DRY_RUN"] && return 
+    [ -n "$DRY_RUN" ] && return 
 
     local host_config="$SRC/hosts/${HOSTNAME}"
     [ -e $host_config ] || {
         echo "Creating testbox configuration file: $host_config"
 
-        local mem_kb="$(grep MemTotal /proc/meminfo | awk '{print $2}')"
-        local mem_gb="$(((mem_kb)/1024/1024))"
+        local mem_kb=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+        local mem_gb=$(((mem_kb)/1024/1024))
 
-        cat <<"EOF" >> $host_config
+        cat > $host_config <<EOF
 memory: ${mem_gb}G
-hdd_partitions: ${hdd_partitions}
-ssd_partitions: ${ssd_partitions}
+hdd_partitions: ${hdd_partitions[*]}
+ssd_partitions: ${ssd_partitions[*]}
 EOF
     }
 }
