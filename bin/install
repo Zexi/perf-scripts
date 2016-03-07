@@ -107,6 +107,21 @@ install_packages() {
     }
 }
 
+install_pip_packages() {
+    local pip_file=$1
+    local distro=$2
+
+    local packages="$(get_dependency_packages ${distro} ${pip_file})" 
+    packages="$(echo $packages | tr '\n' ' ')"
+    echo "Use: pip install $packages"
+    [ -n "$DRY_RUN" ] && return
+
+    pip install $packages || {
+        echo "Cannot use pip install $packages"
+        exit 1
+    }
+}
+
 build_install_benchmarks() {
     local script=$1
     local distro=$2
@@ -150,6 +165,7 @@ make_wakeup
 create_package_dir
 create_host_config
 install_packages "ps" $distro
+install_pip_packages "python-packages" $distro
 
 for filename in "$@"
 do
