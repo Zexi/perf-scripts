@@ -21,6 +21,7 @@ LIB_PATH = SRC + '/lib'
 sys.path.insert(0, LIB_PATH)
 
 import job
+import ipdb
 
 class Job2sh(object):
 
@@ -127,6 +128,7 @@ class Job2sh(object):
             cmd.insert(0, "run_test")
             self.exec_line()
             self.stats_lines.append('\t$SRC/stats/wrapper time %s.time' % program)
+            self.stats_lines.append('\t$SRC/stats/wrapper %s %s' % program)
         else:
             self.exec_line()
         return cmd
@@ -203,7 +205,7 @@ class Job2sh(object):
             if not pass_key == "PASS_RUN_COMMANDS":
                 return False
             self.exec_line()
-            func_name = re.sub(r'[^a-zA-Z0-9_]', '_', val)
+            func_name = re.sub(r'[^a-zA-Z0-9_]', '_', key)
             self.exec_line(tabs + "%s()" % func_name)
             self.exec_line(tabs + "{")
             self.parse_hash(ancestors + [key], val)
@@ -271,19 +273,22 @@ class Job2sh(object):
         self.parse_hash([], job_obj)
         self.out_line('}\n\n')
 
-        #self.cur_func = "extract_stats"
-        #self.out_line("{")
-        #self.programs_hash = job.create_programs_hash("stats")
-        #self.parse_hash([], job_obj)
-        #self.out_line()
-        #self.out_line(self.stats_lines)
-        #self.parse_hash([], yaml.load(open(SRC+'/etc/default_stats.yaml')))
-        #self.out_line("}\n\n")
+        self.cur_func = "extract_stats"
+        self.out_line("extract_stats()")
+        self.out_line("{")
+        self.programs_hash = job.create_programs_hash("stats")
+
+        ipdb.set_trace()
+        self.parse_hash([], job_obj)
+        self.out_line()
+        self.out_line(self.stats_lines)
+        self.parse_hash([], yaml.load(open(SRC+'/etc/default_stats.yaml')))
+        self.out_line("}\n\n")
 
         self.out_line('"$@"')
 
         for line in self.script_lines:
             if line:
-                print('%s' % line)
+                print(''.join(line))
 
 

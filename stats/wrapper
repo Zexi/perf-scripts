@@ -1,0 +1,118 @@
+#!/bin/bash
+
+set -o pipefail
+
+program_dir=$(dirname $0)
+program=$1
+stats_group=${2:-$1}
+log=$RESULT_ROOT/$stats_group
+
+check_incomplete_run()
+{
+	local file=$1
+
+	[[ -s $file ]] && return
+	[[ -f $LKP_SRC/tests/$program ]] || return
+
+	echo -e "# missing $program $file\nis_incomplete_run: 1" >> $RESULT_ROOT/last_state
+}
+
+check_empty_output()
+{
+	[[ -s $log ]] && return
+
+	[[ $program = 'tcrypt' ]] && return
+	[[ $program = 'kernel-size' ]] && return
+	[[ $program = 'perf-profile' ]] && return
+	[[ $program = 'dmesg' && -s $RESULT_ROOT/kmsg ]] && return
+	[[ $program = 'kmsg' && -s $RESULT_ROOT/dmesg ]] && return
+
+	rm -f $log $log.gz
+	exit 0
+}
+
+warn_empty_stats()
+{
+	[[ -s $tmpfile ]] && return
+	[[ $testbox =~ ^vm- ]] && return
+	[[ $program = 'dmesg' ]] && return
+	[[ $program = 'ftrace' ]] && return
+	[[ $program = 'turbostat' ]] && return
+	[[ -s $RESULT_ROOT/time ]] || return
+	[[ -s $RESULT_ROOT/last_state ]] && return
+	grep -q "^$program\." $LKP_SRC/etc/failure && return
+
+	echo "WARN: empty stats for $log" >&2
+}
+
+if [ -f $log.gz ]; then
+	zcat $log.gz > $log
+elif [ -f $log.xz ]; then
+	xzcat $log.xz > $log
+fi
+
+kmsg_log=$RESULT_ROOT/kmsg
+
+# extract kmsg for kmsg related stats
+if [[ $log =~ ^$RESULT_ROOT/(boot-memory|boot-time|tcrypt|dmesg)$ ]]; then
+	[ -f $kmsg_log.xz ] && xzcat $kmsg_log.xz > $kmsg_log
+fi
+
+dmesg_log=$RESULT_ROOT/dmesg
+
+# extract dmesg for dmesg related stats
+if [[ $log =~ ^$RESULT_ROOT/kmsg$ ]]; then
+	[ -f $dmesg_log.xz ] && xzcat $dmesg_log.xz > $dmesg_log
+fi
+
+check_incomplete_run $log
+check_empty_output
+
+tmpfile=$(mktemp --tmpdir=/dev/shm lkp-stats.XXXXXXXX)
+if [[ -f $log ]]; then
+	$program_dir/$program $log < $log > $tmpfile || { echo "$program_dir/$program $log < $log  exit code $?, check $tmpfile" >&2; exit 1; }
+else
+	$program_dir/$program < /dev/null > $tmpfile || { echo "$program_dir/$program < /dev/null  exit code $?, check $tmpfile" >&2; exit 1; }
+fi
+
+grep -q "^$program\." $LKP_SRC/etc/failure ||
+check_incomplete_run $tmpfile
+
+warn_empty_stats
+
+dump_stat()
+{
+	local stats_group=$1
+	local file=$2
+
+	$LKP_SRC/sbin/dump-stat $stats_group < $file || { echo "$LKP_SRC/sbin/dump-stat $program  exit code $?, check $file" >&2; exit 1; }
+	rm $file
+}
+
+if [[ $program = 'ftrace' ]]; then
+	for file in $RESULT_ROOT/$program.*.yaml
+	do
+		stats_group=$(basename $file .yaml)
+		dump_stat $stats_group $file
+	done
+else
+	dump_stat $stats_group $tmpfile
+fi
+
+# xz large files for long term storage, remove possible .gz
+if [[ $program =~ ^(sched_debug|proc-stat|perf-profile|ftrace|kmsg|dmesg)$ ]]; then
+	[ -s $log ] && [ ! -f $log.xz ] && xz $log && rm -f $log.gz
+fi
+
+if [ -f $log.gz ]; then
+	rm $log
+elif [ -f $log.xz ]; then
+	rm $log -f
+fi
+
+# delete temporarily extracted kmsg above
+[ -f $kmsg_log.xz ] && rm -f $kmsg_log
+# delete temporarily extracted dmesg above
+[ -f $dmesg_log.xz ] && rm -f $dmesg_log
+
+exit 0
