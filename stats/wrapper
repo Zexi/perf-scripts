@@ -12,7 +12,7 @@ check_incomplete_run()
 	local file=$1
 
 	[[ -s $file ]] && return
-	[[ -f $LKP_SRC/tests/$program ]] || return
+	[[ -f $SRC/tests/$program ]] || return
 
 	echo -e "# missing $program $file\nis_incomplete_run: 1" >> $RESULT_ROOT/last_state
 }
@@ -40,7 +40,7 @@ warn_empty_stats()
 	[[ $program = 'turbostat' ]] && return
 	[[ -s $RESULT_ROOT/time ]] || return
 	[[ -s $RESULT_ROOT/last_state ]] && return
-	grep -q "^$program\." $LKP_SRC/etc/failure && return
+	grep -q "^$program\." $SRC/etc/failure && return
 
 	echo "WARN: empty stats for $log" >&2
 }
@@ -75,7 +75,7 @@ else
 	$program_dir/$program < /dev/null > $tmpfile || { echo "$program_dir/$program < /dev/null  exit code $?, check $tmpfile" >&2; exit 1; }
 fi
 
-grep -q "^$program\." $LKP_SRC/etc/failure ||
+grep -q "^$program\." $SRC/etc/failure ||
 check_incomplete_run $tmpfile
 
 warn_empty_stats
@@ -85,7 +85,7 @@ dump_stat()
 	local stats_group=$1
 	local file=$2
 
-	$LKP_SRC/sbin/dump-stat $stats_group < $file || { echo "$LKP_SRC/sbin/dump-stat $program  exit code $?, check $file" >&2; exit 1; }
+	$SRC/sbin/dump-stat $stats_group < $file || { echo "$SRC/sbin/dump-stat $program  exit code $?, check $file" >&2; exit 1; }
 	rm $file
 }
 
