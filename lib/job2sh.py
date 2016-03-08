@@ -39,7 +39,7 @@ class Job2sh(object):
             return ''
         elif isinstance(val, int):
             return str(val)
-        elif re.match(r'^[-a-zA-Z0-9~!@#%^&*()_+=;:.,<>/?|\t "]+$', val) or isinstance(val, datetime.date):
+        elif isinstance(val, datetime.date) or re.match(r'^[-a-zA-Z0-9~!@#%^&*()_+=;:.,<>/?|\t "]+$', val):
             return "'%s'" % val
         elif re.match(r"^[-a-zA-Z0-9~!@#%^&*()_+=;:.,<>\/?|\t '$]+$", val):
             return '"' + val + '"'
@@ -128,7 +128,6 @@ class Job2sh(object):
             cmd.insert(0, "run_test")
             self.exec_line()
             self.stats_lines.append('\t$SRC/stats/wrapper time %s.time' % program)
-            self.stats_lines.append('\t$SRC/stats/wrapper %s %s' % program)
         else:
             self.exec_line()
         return cmd
@@ -278,7 +277,6 @@ class Job2sh(object):
         self.out_line("{")
         self.programs_hash = job.create_programs_hash("stats")
 
-        ipdb.set_trace()
         self.parse_hash([], job_obj)
         self.out_line()
         self.out_line(self.stats_lines)

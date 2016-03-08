@@ -7,3 +7,4 @@ kmod
 gzip
 xz-utils
 python
+python-pip
