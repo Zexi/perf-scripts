@@ -1,0 +1,17 @@
+dmesg.*
+kmsg.*
+stderr.*
+xfstests.*.fail
+xfstests.*.inconsistent_fs
+ltp.*.fail
+kernel_selftests.*.fail
+.*\.fail$
+last_state.*
+packetdrill.*.FAIL
+autotest.*
+pm-qa.*
+kvm-unit-tests.*
+piglit.*.(fail|crash|timeout|warn|dmesg-warn|dmesg-fail)
+suspend.*
+build-.*
+lkp-bug.*

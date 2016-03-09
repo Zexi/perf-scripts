@@ -1,16 +1,15 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env python2.7
 
-while line = STDIN.gets
-	next if line.index('Command being timed: ')
-	key, val = line.split ': '
-	key = key.gsub(/^\s+/, '').gsub(/ \([^)]+\)/, '').gsub(/\s+/, '_').downcase
-	case key
-	when 'elapsed_time'
-		times = val.split ':'
-		val = times.inject(0) {|tt, t| tt * 60 + t.to_f}
-	when 'percent_of_cpu_this_job_got'
-		val.chomp!("%\n")
-		val = '0' if val == '?'
-	end
-	puts "#{key}: #{val}"
-end
+import sys
+import os
+import re
+
+for line in sys.stdin:
+    if 'Command being timed: ' in line:
+        continue
+    key, val = line.split(': ')
+    key = re.sub(r'\s+', '_', re.sub(' \([^)]+\)', '', re.sub(r'^\s+', '', key))).lower()
+    if key == 'elapsed_time':
+        times = val.split(':')
+        val = float(times[0]) * 60 + float(times[1])
+    print "%s: %s" % (key, val)
