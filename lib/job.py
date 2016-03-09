@@ -6,6 +6,7 @@ import types
 import shutil
 import commands
 import collections
+import re
 
 SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 LIB_PATH = SRC + '/lib'
@@ -157,7 +158,7 @@ class Job(dict):
         if not self.path:
             return 'defaults'
         else:
-            return self.path
+            return re.sub(r'^-a-zA-Z0-9+:.%', '_', self.path.strip('-'))
 
     def save(self, jobfile):
         atomic_save_yaml(self.job, jobfile)
