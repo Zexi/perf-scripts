@@ -12,8 +12,10 @@ echo rw=$rw
 echo bs=$bs
 echo ioengine=$ioengine
 echo fallocate=$fallocate
+echo size=$size
 
 : ${bs:=4k}
+: ${size:=10G}
 : ${fallocate:=posix}
 
 export blocksize=$bs

@@ -21,7 +21,6 @@ LIB_PATH = SRC + '/lib'
 sys.path.insert(0, LIB_PATH)
 
 import job
-import ipdb
 
 class Job2sh(object):
 

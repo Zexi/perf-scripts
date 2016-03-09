@@ -12,25 +12,36 @@ cat > $jobfile <<EOF
 [global]
 runtime=$runtime
 direct=1
-ioengine=$ioengine
 blocksize=$blocksize
-numjobs=1
-iodepth=64
-filename=/dev/vdc1
+filename=$filename
+group_reporting
+size=$size
 
 [seq-read]
 rw=read
+ioengine=psync 
+blocksize=1024k
 stonewall
 
 [rand-read]
 rw=randread
+ioengine=libaio
+blocksize=4k
+iodepth=32
+thread
 stonewall
 
 [seq-write]
 rw=write
+ioengine=psync
+blocksize=1024k
 stonewall
 
 [rand-write]
 rw=randwrite
+ioengine=libaio
+blocksize=4k
+iodepth=32
+thread
 stonewall
 EOF

@@ -61,4 +61,5 @@ mkdir $TMP
 $job_script run_job
 $SRC/bin/post-run
 #$SRC/monitors/event/wakeup job-finished
+$job_script extract_stats
 

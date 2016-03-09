@@ -54,7 +54,7 @@ run_test()
 {
     local program=${1##*/}
     [ "$program" = 'wrapper' ] && program=$2
-    wakeup_pre_test
+    #wakeup_pre_test
     "$@"
     check_exit_code $?
 }

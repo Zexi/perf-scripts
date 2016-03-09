@@ -2,7 +2,8 @@ testcase: fio-vm
 category: benchmark
 
 fio:
+  filename: /lzx/fio_test.fio
   ioengine:
-  - libaio
+    - libaio
   bs: 4k
   size: 10G

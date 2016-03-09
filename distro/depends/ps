@@ -6,5 +6,6 @@ time
 kmod
 gzip
 xz-utils
+epel-release
 python
 python-pip
