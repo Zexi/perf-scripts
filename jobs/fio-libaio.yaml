@@ -2,7 +2,7 @@ testcase: fio-vm
 category: benchmark
 
 fio:
-  filename: /lzx/fio_test.fio
+  filename: /dev/vdd1
   ioengine:
     - libaio
   bs: 4k

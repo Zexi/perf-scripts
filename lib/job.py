@@ -5,8 +5,11 @@ import sys
 import types
 import shutil
 import commands
+import collections
 
 SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
+LIB_PATH = SRC + '/lib'
+sys.path.insert(0, LIB_PATH)
 
 def __create_programs_hash(dir_list, src):
 
@@ -63,7 +66,7 @@ class Job(dict):
 
     def update(self, hash, top=False):
         if not hasattr(self, 'job'):
-            self.job = {}
+            self.job = collections.OrderedDict({})
         if top:
             self.job = self.job.update(hash)
         else:
@@ -80,9 +83,7 @@ class Job(dict):
     def load(self, jobfile):
         with open(self.abspath(jobfile)) as stream:
             tmp_job = yaml.load(stream)
-            if not hasattr(self, 'job'):
-                self.job = {}
-            self.job.update(tmp_job)
+            self.update(tmp_job)
 
     def abspath(self, path):
         return os.path.abspath(path)
@@ -160,3 +161,17 @@ class Job(dict):
 
     def save(self, jobfile):
         atomic_save_yaml(self.job, jobfile)
+
+    def __getitem__(self, key):
+        val = self.job[key]
+        return val
+
+    def __setitem__(self, key, val):
+        self.job[key] = val
+
+    def _result_root(self):
+        result_path = '/results/' + self.job['testbox'] + '/' + self.job['rootfs'] + '-' + self.job['commit'] + '/' + self.job['testcase']
+        return result_path.replace('"', '')
+
+    def to_hash(self):
+        return self.job

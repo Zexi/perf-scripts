@@ -64,7 +64,7 @@ class Job2sh(object):
         self.script_lines.append(line)
 
     def shell_header(self):
-        self.out_line("#!/bin/bash")
+        self.out_line("#!/bin/bash\n")
 
     def get_program_env(self, program, env):
         program_env = {}
@@ -256,7 +256,7 @@ class Job2sh(object):
         self.out_line()
         self.out_line('\t[ -n "$SRC" ] ||')
         self.out_line('\texport SRC=/perf-scripts/${user:-ps}/src')
-        self.out_line('}\n\n')
+        self.out_line('}\n')
 
         self.out_line("run_job()")
         self.out_line("{")
@@ -269,7 +269,7 @@ class Job2sh(object):
         self.out_line('\texport_top_env')
         self.out_line()
         self.parse_hash([], job_obj)
-        self.out_line('}\n\n')
+        self.out_line('}\n')
 
         self.cur_func = "extract_stats"
         self.out_line("extract_stats()")
@@ -280,12 +280,13 @@ class Job2sh(object):
         self.out_line()
         self.out_line(self.stats_lines)
         self.parse_hash([], yaml.load(open(SRC+'/etc/default_stats.yaml')))
-        self.out_line("}\n\n")
+        self.out_line("}\n")
 
         self.out_line('"$@"')
 
         for line in self.script_lines:
             if line:
-                print(''.join(line))
+                #print(''.join(line))
+                out_script.write('%s\n' % ''.join(line))
 
 

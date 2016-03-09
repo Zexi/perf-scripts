@@ -30,7 +30,7 @@ case "$pst_command" in
     'install')  pst_command='install'   ;;
     'split')    pst_command='split-job' ;;
     'compile')  pst_command='job2sh'    ;;
-    'run')      pst_command='run-local.sh' ;;
+    'run')      pst_command='run-local' ;;
 esac
 
 try_run()

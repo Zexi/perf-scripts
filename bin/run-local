@@ -1,49 +1,100 @@
-#!/bin/bash
+#!/usr/bin/env python2.7
 
-[ -n "$SRC" ] || export SRC=$(dirname $(dirname $(readlink -e -v $0)))
-export TMP=/tmp/perf-test/tmp
-export PATH=$PATH:$SRC/bin
-export BENCHMARK_ROOT=/tmp/perf-test/benchmarks
+import os
+import sys
+import argparse
+import yaml
+import subprocess
+import shutil
 
-usage()
-{
-    cat <<EOF
-Usage: $0 [-o RESULT_ROOT] JOB_SCRIPT
+SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
+LIB_PATH = SRC + '/lib'
+sys.path.insert(0, LIB_PATH)
 
-options:
-    -o RESULT_ROOT          dir for storing all test results
-EOF
-    exit 1
-}
+import job
+import job2sh
 
-while getopts "o:" opt
-do
-    case $opt in
-    o ) opt_result_root="$OPTARG" ;;
-    ? ) usage ;;
-    esac
-done
+os.environ['SRC'] = SRC
+#PST_USER = os.environ['USER']
+TMP = "/tmp/pst-tmp"
+os.environ['TMP'] = TMP
+os.environ['PATH'] = os.environ['PATH'] + ":%s/bin" % SRC
+os.environ['BENCHMARK_ROOT'] = '/tmp/perf-test/benchmarks'
 
-shift $(($OPTIND-1))
-job_script=$1
-[ -n "$job_script" ] || usage
-job_script=$(readlink -e -v $job_script)
+opt_result_root = None
+opt_set_key_value = {}
 
-if [ -z $opt_result_root ]; then
-    opt_result_root="/tmp/result/$(basename $job_script)"
-    RESULT_ROOT=$opt_result_root
-    mkdir -p -m 02775 $RESULT_ROOT
-else
-    mkdir -p -m 02775 $opt_result_root
-    export RESULT_ROOT=$(readlink -e -v $opt_result_root)
-fi
+parser = argparse.ArgumentParser()
+parser.add_argument('-o', '--output', help="dir for storing all results", type=str)
+parser.add_argument('-s', '--set', nargs='*', help="--set 'KEY: VALUE' add YAML hash to job", type=str)
+parser.add_argument('-j', '--jobfile', help="specify job file", type=str)
 
-export RESULT_ROOT
-export TMP_RESULT_ROOT=$RESULT_ROOT
-rm -rf $TMP
-mkdir $TMP
+args = parser.parse_args()
+opt_result_root = args.output
+jobfile = args.jobfile
 
-$job_script run_job
-$SRC/bin/post-run
-#$SRC/monitors/event/wakeup job-finished
+if args.set:
+    for i in args.set:
+        opt_set_key_value.update(yaml.load(i))
 
+if len(sys.argv) == 1:
+    parser.print_help()
+    sys.exit(1)
+
+if not jobfile:
+    print "No jobfile specified"
+    sys.exit(1)
+
+jobfile=os.path.abspath(jobfile)
+if not os.path.isfile(jobfile):
+    print "%s is not file" % jobfile
+
+def create_result_root(_result_root):
+    for i in range(0, 100):
+        result_root = _result_root + os.sep + str(i)
+        if os.path.exists(result_root):
+            continue
+        os.makedirs(result_root, 02775)
+        return result_root
+    sys.stderr.write("Cannot create more result_roots under %s" % _result_root)
+    return None
+
+job = job.Job()
+job.load(jobfile)
+
+HOSTNAME = os.environ['HOSTNAME'] 
+job['testbox'] = HOSTNAME
+job['commit'] = subprocess.check_output('uname -r', shell=True).strip('\n')
+job['rootfs'] = subprocess.check_output('grep -m1 ^ID= /etc/os-release', shell=True).split('=')[1].strip('\n')
+
+if opt_set_key_value:
+    for k, v in opt_set_key_value.iteritems:
+        job[k] = v
+
+if opt_result_root == None:
+    _result_root = job._result_root()
+    result_root = create_result_root(_result_root)
+    if not result_root:
+        print "Can't create result_root: %s" % _result_root
+        sys.exit(1)
+    os.environ['RESULT_ROOT'] = result_root
+else:
+    result_root = opt_result_root
+
+os.environ['TMP_RESULT_ROOT'] = os.environ['RESULT_ROOT']
+
+if os.path.exists(TMP):
+    shutil.rmtree(TMP)
+os.makedirs(TMP)
+
+job_script = result_root + '/job.sh'
+with open(job_script, 'w') as f:
+    j2s = job2sh.Job2sh()
+    j2s.job2sh(job.to_hash(), f)
+os.chmod(job_script, 0775)
+
+subprocess.call(job_script + ' run_job', shell=True)
+subprocess.call(SRC + '/bin/post-run', shell=True)
+subprocess.call(job_script + ' extract_stats', shell=True)
+
+job.save(result_root + '/job.yaml')
