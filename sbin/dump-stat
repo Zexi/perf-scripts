@@ -46,7 +46,7 @@ for line in sys.stdin:
     else:
         v = int(v)
 
-    print "outside valid range: %s in %s %s" % (v, k, RESULT_ROOT)
+    #print "outside valid range: %s in %s %s" % (v, k, RESULT_ROOT)
     result[k].append(v)
 
 if len(result) == 0:

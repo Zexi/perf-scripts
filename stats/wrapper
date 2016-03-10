@@ -7,6 +7,11 @@ program=$1
 stats_group=${2:-$1}
 log=$RESULT_ROOT/$stats_group
 
+# fio can convert own output to json
+if [[ $stats_group = 'fio' ]]; then
+    log=$RESULT_ROOT/"$stats_group"_output.json
+fi
+
 check_incomplete_run()
 {
 	local file=$1

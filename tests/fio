@@ -27,6 +27,8 @@ fi
 copy-results $jobfile
 
 # Clean memory cached
-free && sync && echo 3 > /proc/sys/vm/drop_caches && free
-
-cmd fio "$RESULT_ROOT/results/$jobfile"
+free -h && sync && echo 3 > /proc/sys/vm/drop_caches && free -h
+command="fio $RESULT_ROOT/results/$jobfile --output-format=json"
+date=$(date +'%F %T')
+echo "$date $command" | tee -a $RESULT_ROOT/reproduce.sh
+exec $command > $RESULT_ROOT/fio_output.json
