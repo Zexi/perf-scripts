@@ -4,6 +4,7 @@ import sys
 import numpy
 import re
 import os
+import collections
 
 RESULT_ROOT = os.environ['RESULT_ROOT']
 SRC = os.environ.get('SRC')
@@ -14,7 +15,7 @@ sys.path.insert(0, LIB_PATH)
 import common
 
 monitor = sys.argv[1]
-result = {}
+result = collections.OrderedDict()
 invalid_records = []
 record_index = 0
 
@@ -43,6 +44,9 @@ for line in sys.stdin:
     v = v.replace('%', '')
     if '.' in v:
         v = float(v)
+    # match time
+    elif re.search(r'\d{2}:\d{2}:\d{2} \d{4}', line):
+        pass
     else:
         v = int(v)
 

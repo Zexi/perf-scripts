@@ -12,7 +12,7 @@ ROUTES = (
         # [url_prefix, direcotry_path]
         ['/tmp', '/tmp'],
         ['/test', '../tools'],
-        ['', '../tools/'] # empty string for the 'default' match
+        ['', '../workspace/'] # empty string for the 'default' match
         )
 
 class RequestHandler(SimpleHTTPRequestHandler):

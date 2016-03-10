@@ -9,6 +9,8 @@ import json
 result = json.load(sys.stdin)
 
 fio_jobs = result.get("jobs")
+fio_time = result.get("time")
+print 'time: ' + fio_time
 
 for job in fio_jobs:
     if job['jobname'] == 'seq-read':
