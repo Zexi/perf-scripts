@@ -6,6 +6,7 @@ import argparse
 import yaml
 import subprocess
 import shutil
+import copy
 
 SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 LIB_PATH = SRC + '/lib'
@@ -90,7 +91,7 @@ os.makedirs(TMP)
 job_script = result_root + '/job.sh'
 with open(job_script, 'w') as f:
     j2s = job2sh.Job2sh()
-    j2s.job2sh(job.to_hash(), f)
+    j2s.job2sh(copy.deepcopy(job.to_hash()), f)
 os.chmod(job_script, 0775)
 
 subprocess.call(job_script + ' run_job', shell=True)
