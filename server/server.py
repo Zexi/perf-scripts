@@ -59,7 +59,7 @@ class PostHandler(tornado.web.RequestHandler):
                 filepath = os.path.join(upload_path, filename)
                 with open(filepath, 'w') as up:
                     up.write(file_meta['body'])
-            self.write('Upload %s successfully!\n' % file)
+            self.write('Upload %s successfully!\n' % filename)
 
 if __name__ == "__main__":
     tornado.options.parse_command_line()
