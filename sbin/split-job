@@ -9,15 +9,7 @@ LIB_PATH = SRC + '/lib'
 sys.path.insert(0, LIB_PATH)
 
 import job
-import pytz
-from datetime import datetime
-
-def unify_time(tz):
-    timezone = pytz.timezone(tz)
-    return timezone.normalize(pytz.utc.localize(datetime.utcnow()).astimezone(timezone))
-
-def get_time(tz='Asia/Shanghai'):
-    return unify_time(tz).strftime('%Y-%m-%d %H:%M:%S')
+import common
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-o', '--output', help="output path", type=str)
@@ -49,7 +41,7 @@ def test_func(job):
         return
     if 'commit' in job:
         unit_jobfile += '-' + job['commit']
-    job['unit_job'] = unit_jobfile
+    job['unit_job'] = unit_jobfile.split('/')[-1]
     unit_jobfile += '.yaml'
     job.save(unit_jobfile)
     print "%s => %s" % (jobfile, unit_jobfile)
@@ -62,7 +54,7 @@ for jobfile in args.jobs:
 
     jobs.load(jobfile)
 
-    jobs.job['enque_time'] = get_time()
+    jobs.job['enque_time'] = common.get_time()
     prefix = args.output + os.sep + os.path.splitext(os.path.basename(jobfile))[0]
 
     jobs.each_jobs(test_func)

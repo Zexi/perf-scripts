@@ -8,6 +8,15 @@ import sys
 import collections
 import tarfile
 import tempfile
+import pytz
+from datetime import datetime
+
+def unify_time(tz):
+    timezone = pytz.timezone(tz)
+    return timezone.normalize(pytz.utc.localize(datetime.utcnow()).astimezone(timezone))
+
+def get_time(tz='Asia/Shanghai'):
+    return unify_time(tz).strftime('%Y-%m-%d %H:%M:%S')
 
 def dot_file(path):
     return os.path.dirname(path) + '/.' + os.path.basename(path)
