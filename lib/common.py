@@ -6,9 +6,32 @@ import shutil
 import os
 import sys
 import collections
+import tarfile
+import tempfile
 
 def dot_file(path):
     return os.path.dirname(path) + '/.' + os.path.basename(path)
+
+def get_filepaths(directory):
+    file_paths = []
+    for root, directories, files in os.walk(directory):
+        for filename in files:
+            filepath = os.path.join(root, filename)
+            file_paths.append(filepath)
+    return file_paths
+
+def create_tar_gz(directory):
+    file_paths = get_filepaths(directory)
+    tar = tarfile.open(tempfile.mktemp(prefix="pst-", suffix=".tar.gz"), "w:gz")
+    for path in file_paths:
+        tar.add(path)
+    tar.close()
+    return tar.name
+
+def extract_tar_gz(src, dst):
+    tar = tarfile.open(src)
+    tar.extractall(dst)
+    tar.close()
 
 def save_json(obj, file):
     temp_file = dot_file(file) + "-" +  str(os.getpid())

@@ -5,13 +5,14 @@ import tornado.ioloop
 import tornado.web
 import tornado.options
 
-import time
 from tornado.options import define, options
 define("port", default=8080, help="run on the given port", type=int)
 
 SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 WORKSPACE = SRC + '/workspace'
-TIMEFORMAT='%Y-%m-%d-%X'
+LIB_PATH = SRC + '/lib'
+sys.path.insert(0, LIB_PATH)
+import common
 
 class Application(tornado.web.Application):
     def __init__(self):
@@ -33,25 +34,15 @@ class PlotHandler(tornado.web.RequestHandler):
         self.write("You requested the plot" + plot_id)
 
 class PostHandler(tornado.web.RequestHandler):
-    def create_result_root(self, _result_root):
-        now_time =  time.strftime(TIMEFORMAT, time.localtime())
-        result_root = _result_root + os.sep + now_time
-        os.makedirs(result_root, 02775)
-        return result_root
-
     def post(self):
         files = self.request.files
         testbox = self.get_argument("testbox")
         rootfs = self.get_argument("rootfs")
         commit = self.get_argument("commit")
         unit_job = self.get_argument("unit_job")
-        _upload_path = "%s/%s/%s-%s/%s" % (WORKSPACE, testbox, rootfs, commit, unit_job)
-        upload_path = self.create_result_root(_upload_path.replace('"', ''))
-        if not upload_path:
-            sys.stderr.write("Can't create upload_path: %s" % upload_path)
-            self.write("Can't create upload_path: %s" % upload_path)
-            self.finish()
-
+        upload_path = WORKSPACE + '/tmp'
+        if not os.path.exists(upload_path):
+            os.makedirs(upload_path, 02775)
 
         for k, v in files.iteritems():
             for file_meta in v:
@@ -59,6 +50,9 @@ class PostHandler(tornado.web.RequestHandler):
                 filepath = os.path.join(upload_path, filename)
                 with open(filepath, 'w') as up:
                     up.write(file_meta['body'])
+                if 'tar.gz' in filepath:
+                    common.extract_tar_gz(filepath, WORKSPACE)
+                    os.remove(filepath)
             self.write('Upload %s successfully!\n' % filename)
 
 if __name__ == "__main__":

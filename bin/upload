@@ -8,8 +8,13 @@ sys.path.insert(0, LIB_PATH)
 
 import job
 import net
+import common
 
 url = sys.argv[1]
 result_path = sys.argv[2]
-files = [result_path + '/' + path for path in ['fio.json', 'time.json']]
+tar_gz_file = common.create_tar_gz(result_path)
+
+files = []
+files.append(tar_gz_file)
 r = net.post_job(url, files, result_path + '/job.yaml')
+os.remove(tar_gz_file)
