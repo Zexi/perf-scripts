@@ -60,6 +60,7 @@ create_package_dir() {
 
 create_host_config() {
     [ -n "$DRY_RUN" ] && return 
+    [ -d "$SRC/hosts" ] || mkdir $SRC/hosts
 
     local host_config="$SRC/hosts/${HOSTNAME}"
     [ -e $host_config ] || {

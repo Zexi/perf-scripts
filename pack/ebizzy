@@ -1,8 +1,8 @@
 #!/bin/bash
 
 VERSION=0.3
-WEB_URL="http://www.mirrorservice.org/sites/downloads.sourceforge.net/e/eb/$BM_NAME/$BM_NAME/${VERSION}/${BM_NAME}-${VERSION}.tar.gz"
-
+#WEB_URL="http://www.mirrorservice.org/sites/downloads.sourceforge.net/e/eb/$BM_NAME/$BM_NAME/${VERSION}/${BM_NAME}-${VERSION}.tar.gz"
+WEB_URL="ftp://ftp.gnome.org/mirror/temp/sf2015/e/eb/$BM_NAME/$BM_NAME/${VERSION}/${BM_NAME}-${VERSION}.tar.gz"
 install()
 {
 	cp -af $BM_NAME $BM_ROOT
