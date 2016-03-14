@@ -104,4 +104,4 @@ subprocess.call(job_script + ' extract_stats', shell=True)
 job.save(result_root + '/job.yaml')
 
 if opt_upload_url:
-    subprocess.call(SRC/bin/upload + ' ' + opt_upload_url + ' ' + result_path, shell=True)
+    subprocess.call(SRC + '/bin/upload' + ' ' + opt_upload_url + ' ' + result_root, shell=True)

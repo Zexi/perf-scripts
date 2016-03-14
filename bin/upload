@@ -12,6 +12,4 @@ import net
 url = sys.argv[1]
 result_path = sys.argv[2]
 files = [result_path + '/' + path for path in ['fio.json', 'time.json']]
-import ipdb
-ipdb.set_trace()
 r = net.post_job(url, files, result_path + '/job.yaml')
