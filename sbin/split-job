@@ -49,6 +49,7 @@ def test_func(job):
         return
     if 'commit' in job:
         unit_jobfile += '-' + job['commit']
+    job['unit_job'] = unit_jobfile
     unit_jobfile += '.yaml'
     job.save(unit_jobfile)
     print "%s => %s" % (jobfile, unit_jobfile)
