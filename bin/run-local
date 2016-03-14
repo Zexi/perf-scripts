@@ -24,15 +24,18 @@ os.environ['BENCHMARK_ROOT'] = '/tmp/perf-test/benchmarks'
 
 opt_result_root = None
 opt_set_key_value = {}
+opt_upload_url = None
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-o', '--output', help="dir for storing all results", type=str)
 parser.add_argument('-s', '--set', nargs='*', help="--set 'KEY: VALUE' add YAML hash to job", type=str)
 parser.add_argument('-j', '--jobfile', help="specify job file", type=str)
+parser.add_argument('-u', '--uploadurl', help="upload results to server", type=str)
 
 args = parser.parse_args()
 opt_result_root = args.output
 jobfile = args.jobfile
+opt_upload_url = args.uploadurl
 
 if args.set:
     for i in args.set:
@@ -99,3 +102,6 @@ subprocess.call(SRC + '/bin/post-run', shell=True)
 subprocess.call(job_script + ' extract_stats', shell=True)
 
 job.save(result_root + '/job.yaml')
+
+if opt_upload_url:
+    subprocess.call(SRC/bin/upload + ' ' + opt_upload_url + ' ' + result_path, shell=True)
