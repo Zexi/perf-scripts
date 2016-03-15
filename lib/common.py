@@ -55,3 +55,6 @@ def load_json(file):
     else:
         sys.stderr.write(file + " not exists")
         return None
+
+def to_json(obj):
+    return json.dumps(obj)
