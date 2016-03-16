@@ -2,6 +2,8 @@
 
 import os
 import sys
+import time
+import datetime
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
@@ -12,24 +14,20 @@ define("port", default=8080, help="run on the given port", type=int)
 
 SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 WORKSPACE = SRC + '/workspace'
+RRDB_PATH = WORKSPACE + '/rrdb'
 LIB_PATH = SRC + '/lib'
 sys.path.insert(0, LIB_PATH)
 import common
-import mongodb
+import result
 
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
                 (r"/", IndexHandler),
                 (r"/results$", ResultsHandler),
-                (r"/results/([\w]+$)", ResultsHandler)
+                (r"/results/([\w-]+$)", ResultsHandler)
                 #(r"/stats/([\w-\d]+)/(plot)$", ResultsHandler, dict(common_string='Value defined in Application')),
         ]
-        mongo_conn = mongodb.client("localhost", 27017)
-        self.results_db = mongo_conn["results"]
-#        self.rootfs_commit_db = mongo_conn["rootfs_commit"]
-#        self.testbox_db = mongo_conn["testbox"]
-#        self.unitjob_db = mongo_conn["unitjob"]
 
         tornado.web.Application.__init__(self, handlers, debug=True)
 
@@ -50,15 +48,11 @@ class PlotHandler(tornado.web.RequestHandler):
         self.write(response)
 
 class ResultsHandler(tornado.web.RequestHandler):
-    def get(self, result_name=None):
-        if result_name:
-            self.write(result_name)
+    def get(self, testcase_name=None):
+        if testcase_name:
+            result.plot_rrdbs(testcase_name)
         else:
-            results_coll = self.application.results_db.results
-            doc_list = mongodb.coll_findall(results_coll)
-            for doc in doc_list: 
-                del doc["_id"]
-                self.write(common.to_json(doc))
+            pass
 
     def post(self):
         files = self.request.files
@@ -67,6 +61,7 @@ class ResultsHandler(tornado.web.RequestHandler):
         commit = self.get_argument("commit")
         unit_job = self.get_argument("unit_job")
         start_time = self.get_argument("start_time")
+
         testcase = self.get_argument("testcase")
         upload_path = WORKSPACE + '/tmp'
         if not os.path.exists(upload_path):
@@ -82,10 +77,13 @@ class ResultsHandler(tornado.web.RequestHandler):
                     common.extract_tar_gz(filepath, WORKSPACE)
                     os.remove(filepath)
             self.write('Upload %s successfully!\n' % filename)
-        results_coll = self.application.results_db.results
-        #testboxs_coll = self.application.results_db.testboxs
-        mongodb.coll_insert(results_coll, {"testbox": testbox, "rootfs": rootfs, "commit": commit, "unit_job": unit_job, "start_time": start_time, "testcase": testcase})
-        #mongodb.coll_insert(testboxs_coll, {"testbox": testbox})
+            if not os.path.exists(RRDB_PATH):
+                os.makedirs(RRDB_PATH, 02775)
+            # rrdb_file will be unicode str, rrdtool not support it
+            rrdb_file = str(RRDB_PATH + '/' + testbox + "--" + testcase + '.rrd')
+            result_path = '%s/results/%s/%s/%s/%s' % (WORKSPACE, testbox, rootfs + '-' + commit, unit_job, start_time)
+            result.update_rrdbs(testcase, rrdb_file, start_time, result_path)
+
 
 if __name__ == "__main__":
     tornado.options.parse_command_line()
