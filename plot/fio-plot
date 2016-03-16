@@ -1,0 +1,59 @@
+#!/usr/bin/env python2.7
+
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import sys
+import os
+import datetime
+
+SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
+LIB_PATH = SRC + '/lib'
+sys.path.insert(0, LIB_PATH)
+import common
+
+if len(sys.argv) == 1:
+    print "Specify fio.json file"
+    sys.exit(1)
+
+def autolabel(ax, rects):
+    # attach some text labels
+    for rect in rects:
+        height = rect.get_height()
+        ax.text(rect.get_x()+rect.get_width()/2., 1.05*height, '%d'%int(height),
+                ha='center', va='bottom')
+
+
+def auto_plot(title, ax, x, y, width):
+    ax.set_title(title)
+    rects = ax.bar(x, y, width=0.3)
+    ax.set_xlim(x[0]-0.5*width, x[-1]+1.5*width)
+    autolabel(ax, rects)
+
+fio_result_file = sys.argv[1]
+fio_res = common.load_json(fio_result_file)
+x = [0, 1, 2, 3]
+fio_xticks = ['seq-read', 'rand-read', 'seq-write', 'rand-write']
+#test_time = []
+#test_time.append(datetime.datetime.strptime(''.join(fio_res["fio.time"]).strip('\n'), '%a %b %d %H:%M:%S %Y'))
+fig, axes = plt.subplots(2, 1)
+width = 0.5
+plt.setp(axes, xticks=np.array(x) + 0.1, xticklabels=fio_xticks)
+fio_throughput = []
+fio_iops = []
+for k, v in fio_res.iteritems():
+    if 'throughput' in k:
+        fio_throughput += v
+    if 'iops' in k:
+        fio_iops += v
+
+fig.suptitle('Fio test result')
+
+auto_plot('IOPS', axes[0], x, fio_iops, width)
+auto_plot('Throughput', axes[1], x, fio_throughput, width)
+
+fig.tight_layout()
+fig.subplots_adjust(top=0.88)
+plt.savefig('../workspace/fio')
+
