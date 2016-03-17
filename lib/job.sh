@@ -50,6 +50,15 @@ run_setup()
     read_env_vars
 }
 
+start_daemon()
+{
+    local program=${1##*/}
+    [ "$program" = 'wrapper' ] && program=$2
+
+    "$@"
+    check_exit_code $?
+}
+
 run_test()
 {
     local program=${1##*/}
