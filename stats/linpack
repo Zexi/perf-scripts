@@ -1,0 +1,9 @@
+#!/usr/bin/env python2.7
+
+import sys
+import re
+
+for line in sys.stdin:
+    m = re.search(r'^[0-9\.e\- ]+(pass|fail)$', line)
+    if m:
+        print 'GFlops: ' + line.split()[4]
