@@ -51,7 +51,7 @@ def plot_rrdbs(testcase_name):
 
 def plot_fio_vm(rrdb_file):
     pic = PIC_PATH + '/' + rrdb_file.split('/')[-1].replace('.rrd', '.png')
-    cmd = "rrdtool graph %s --title 'Fio seq read/write throughput' DEF:srthr=%s:srthr:AVERAGE DEF:swthr=%s:swthr:AVERAGE LINE1:srthr#FF0000:'seq read iops' LINE2:swthr#00FF00:'seq write iops'" % (pic, rrdb_file, rrdb_file)
+    cmd = "rrdtool graph %s --title 'Fio seq read/write throughput' DEF:srthr=%s:srthr:AVERAGE DEF:swthr=%s:swthr:AVERAGE LINE1:srthr#FF0000:'seq read throughput' LINE2:swthr#00FF00:'seq write throughput'" % (pic, rrdb_file, rrdb_file)
     subprocess.check_call(cmd, shell=True)
     return pic
 

@@ -83,6 +83,7 @@ class ResultsHandler(tornado.web.RequestHandler):
             rrdb_file = str(RRDB_PATH + '/' + testbox + "--" + testcase + '.rrd')
             result_path = '%s/results/%s/%s/%s/%s' % (WORKSPACE, testbox, rootfs + '-' + commit, unit_job, start_time)
             result.update_rrdbs(testcase, rrdb_file, start_time, result_path)
+            result.plot_rrdbs(testcase)
 
 
 if __name__ == "__main__":
