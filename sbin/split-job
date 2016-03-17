@@ -13,6 +13,7 @@ import common
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-o', '--output', help="output path", type=str)
+parser.add_argument('-t', '--testbox', help="--test-box HOSTNAME", type=str)
 parser.add_argument('--no-defaults', help="do not load the defaults headers", type=str, default="no")
 parser.add_argument('-j', '--jobs', help="specify job files", nargs='+', type=str)
 
@@ -30,7 +31,8 @@ elif not os.path.isdir(output_path):
     sys.stderr.write("%s: no such direcotory\n" % output_path)
     sys.exit(1)
 
-opt_testbox = os.getenv("HOSTNAME")
+if not args.testbox:
+    opt_testbox = os.getenv("HOSTNAME")
 atom_jobs = []
 
 def test_func(job):
@@ -49,8 +51,9 @@ def test_func(job):
 for jobfile in args.jobs:
     jobs = job.Job()
 
-    #if args.no_defaults == "no":
-    #jobs.load_head("%s/jobs/DEFAULTS" % SRC)
+    if args.no_defaults == "no":
+        #jobs.load_head("%s/jobs/DEFAULTS" % SRC)
+        jobs.load_head("%s/hosts/%s" % (SRC, opt_testbox), True)
 
     jobs.load(jobfile)
 

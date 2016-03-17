@@ -68,10 +68,7 @@ class Job(dict):
     def update(self, hash, top=False):
         if not hasattr(self, 'job'):
             self.job = collections.OrderedDict({})
-        if top:
-            self.job = self.job.update(hash)
-        else:
-            self.job.update(hash)
+        self.job.update(hash)
 
     def load_head(self, jobfile, top=False):
         jobfile = self.abspath(jobfile)

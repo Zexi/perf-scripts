@@ -67,10 +67,9 @@ create_host_config() {
         echo "Creating testbox configuration file: $host_config"
 
         local mem_kb=$(grep MemTotal /proc/meminfo | awk '{print $2}')
-        local mem_gb=$(((mem_kb)/1024/1024))
 
         cat > $host_config <<EOF
-memory: ${mem_gb}G
+memory: ${mem_kb}K
 hdd_partitions: ${hdd_partitions[*]}
 ssd_partitions: ${ssd_partitions[*]}
 EOF
