@@ -168,7 +168,7 @@ class Job(dict):
         self.job[key] = val
 
     def _result_root(self):
-        result_path = '/results/' + self.job['testbox'] + '/' + self.job['rootfs'] + '-' + self.job['commit'] + '/' + self.job['unit_job'] + '/' + self.job['start_time']
+        result_path = '/results/' + self.job['testcase'] + '/' + self.job['job_params'] + '/' + self.job['testbox'] + '/' + self.job['rootfs'] + '/' + self.job['commit'] + '/' + self.job['start_time']
         return result_path.replace('"', '')
 
     def to_hash(self):

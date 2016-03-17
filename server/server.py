@@ -28,13 +28,17 @@ class Application(tornado.web.Application):
                 (r"/results/([\w-]+$)", ResultsHandler)
                 #(r"/stats/([\w-\d]+)/(plot)$", ResultsHandler, dict(common_string='Value defined in Application')),
         ]
+        settings = dict(
+                template_path=os.path.join(os.path.dirname(__file__), "templates"),
+                static_path=os.path.join(os.path.dirname(__file__), "static"),
+                debug=True ,
+                )
 
-        tornado.web.Application.__init__(self, handlers, debug=True)
+        tornado.web.Application.__init__(self, handlers, **settings)
 
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
-        greeting = self.get_argument('greeting', 'Hello')
-        self.write(greeting + ', friendly user!')
+        self.render('index.html', )
 
 class PlotHandler(tornado.web.RequestHandler):
     def initialize(self, common_string):
@@ -61,8 +65,9 @@ class ResultsHandler(tornado.web.RequestHandler):
         commit = self.get_argument("commit")
         unit_job = self.get_argument("unit_job")
         start_time = self.get_argument("start_time")
-
         testcase = self.get_argument("testcase")
+        job_params = self.get_argument("job_params")
+
         upload_path = WORKSPACE + '/tmp'
         if not os.path.exists(upload_path):
             os.makedirs(upload_path, 02775)
@@ -81,10 +86,9 @@ class ResultsHandler(tornado.web.RequestHandler):
                 os.makedirs(RRDB_PATH, 02775)
             # rrdb_file will be unicode str, rrdtool not support it
             rrdb_file = str(RRDB_PATH + '/' + testbox + "--" + testcase + '.rrd')
-            result_path = '%s/results/%s/%s/%s/%s' % (WORKSPACE, testbox, rootfs + '-' + commit, unit_job, start_time)
-            result.update_rrdbs(testcase, rrdb_file, start_time, result_path)
-            result.plot_rrdbs(testcase)
-
+            result_path = '%s/results/%s/%s/%s/%s/%s/%s' % (WORKSPACE, testcase, job_params, testbox, rootfs, commit, start_time)
+            result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path)
+            result.plot_rrdbs(str(testcase))
 
 if __name__ == "__main__":
     tornado.options.parse_command_line()

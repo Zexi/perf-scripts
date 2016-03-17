@@ -24,13 +24,15 @@ def run_each_job():
         os.makedirs(CYCLIC_PATH, 02775)
 
     def split_run_job(job):
-        unit_jobfile = prefix + '-' + job.path_params()
+        job_params = job.path_params()
+        unit_jobfile = prefix + '-' + job_params
         # there is a ['xxx', 'yyy'] bug in unit_jobfile, still not find it
         # maybe first jump it
         if '[' in unit_jobfile:
             return
         if 'commit' in job:
             unit_jobfile += '-' + job['commit']
+        job['job_params'] = job_params
         job['unit_job'] = unit_jobfile.split('/')[-1]
         unit_jobfile += '.yaml'
         job.save(unit_jobfile)

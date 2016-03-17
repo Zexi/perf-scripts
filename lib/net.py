@@ -23,6 +23,7 @@ def get_job_post_arguments(jobfile):
     job_post_arguments['unit_job'] = job_obj['unit_job']
     job_post_arguments['start_time'] = job_obj['start_time']
     job_post_arguments['testcase'] = job_obj['testcase']
+    job_post_arguments['job_params'] = job_obj['job_params']
     
     return job_post_arguments
 
