@@ -2,8 +2,6 @@
 
 import os
 import sys
-import time
-import datetime
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
@@ -26,12 +24,11 @@ class Application(tornado.web.Application):
                 (r"/", IndexHandler),
                 (r"/results$", ResultsHandler),
                 (r"/results/([\w-]+$)", ResultsHandler)
-                #(r"/stats/([\w-\d]+)/(plot)$", ResultsHandler, dict(common_string='Value defined in Application')),
         ]
         settings = dict(
                 template_path=os.path.join(os.path.dirname(__file__), "templates"),
                 static_path=os.path.join(os.path.dirname(__file__), "static"),
-                debug=True ,
+                debug=True
                 )
 
         tornado.web.Application.__init__(self, handlers, **settings)
@@ -39,17 +36,6 @@ class Application(tornado.web.Application):
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
         self.render('index.html', )
-
-class PlotHandler(tornado.web.RequestHandler):
-    def initialize(self, common_string):
-        self.common_string = common_string
-
-    def get(self, plot_id):
-        response = { 'plot': plot_id,
-                     'name':'Plot test results',
-                     'common_string': self.common_string
-                     }
-        self.write(response)
 
 class ResultsHandler(tornado.web.RequestHandler):
     def get(self, testcase_name=None):
@@ -63,7 +49,6 @@ class ResultsHandler(tornado.web.RequestHandler):
         testbox = self.get_argument("testbox")
         rootfs = self.get_argument("rootfs")
         commit = self.get_argument("commit")
-        unit_job = self.get_argument("unit_job")
         start_time = self.get_argument("start_time")
         testcase = self.get_argument("testcase")
         job_params = self.get_argument("job_params")
@@ -85,7 +70,7 @@ class ResultsHandler(tornado.web.RequestHandler):
             if not os.path.exists(RRDB_PATH):
                 os.makedirs(RRDB_PATH, 02775)
             # rrdb_file will be unicode str, rrdtool not support it
-            rrdb_file = str(RRDB_PATH + '/' + testbox + "--" + testcase + '.rrd')
+            rrdb_file = str(RRDB_PATH + '/' + testcase + "--" + testbox + '.rrd')
             result_path = '%s/results/%s/%s/%s/%s/%s/%s' % (WORKSPACE, testcase, job_params, testbox, rootfs, commit, start_time)
             result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path)
             result.plot_rrdbs(str(testcase))

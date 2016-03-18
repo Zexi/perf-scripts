@@ -17,12 +17,17 @@ RRD_CREATE_OPTION = {"fio-vm": ['--step', '300', 'DS:srthr:GAUGE:600:U:U', 'DS:s
                      'DS:rrthr:GAUGE:600:U:U', 'DS:rriops:GAUGE:600:U:U',
                      'DS:swthr:GAUGE:600:U:U', 'DS:swiops:GAUGE:600:U:U',
                      'DS:rwthr:GAUGE:600:U:U', 'DS:rwiops:GAUGE:600:U:U',
-                     'RRA:AVERAGE:0.5:1:24']}
+                     'RRA:AVERAGE:0.5:1:600'],
+                     "unixbench": ['--step', '1800', 'DS:score:GAUGE:3600:U:U',
+                     'RRA:AVERAGE:0.5:1:120']}
 
 def update_rrdbs(testcase_name, rrdb_file, start_time, result_path):
     create_testcase_rrdb(testcase_name, rrdb_file, start_time)
     if testcase_name == "fio-vm":
         update_fio_vm_rrdb(rrdb_file, start_time, result_path)
+    elif testcase_name == "unixbench":
+        update_fio_unixbench_rrdb(rrdb_file, start_time, result_path)
+
 
 def create_testcase_rrdb(testcase_name, rrdb_file, start_time):
     if not os.path.exists(rrdb_file):
@@ -41,6 +46,13 @@ def update_fio_vm_rrdb(rrdb_file, start_time, result_path):
     rrdupdate_cmd = "%d:%f:%f:%f:%f:%f:%f:%f:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), seq_read_throughput, seq_read_iops, rand_read_throughput, rand_read_iops, seq_write_throughput, seq_write_iops, rand_write_throughput, rand_write_iops)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
+def update_fio_unixbench_rrdb(rrdb_file, start_time, result_path):
+    unixbench_res = common.load_json(result_path.replace('"', '') + '/unixbench.json')
+    score = unixbench_res['unixbench.score'][0]
+    rrdupdate_cmd = "%d:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), score)
+    rrdtool.update(rrdb_file, rrdupdate_cmd)
+
+
 def plot_rrdbs(testcase_name):
     if not os.path.exists(PIC_PATH):
         os.makedirs(PIC_PATH, 02775)
@@ -48,6 +60,11 @@ def plot_rrdbs(testcase_name):
     if testcase_name == 'fio-vm':
         for rrdb_file in same_testcase_rrdbs:
             plot_fio_vm(rrdb_file)
+    elif testcase_name == 'unixbench':
+        for rrdb_file in same_testcase_rrdbs:
+            plot_unixbench(rrdb_file)
+    else:
+        pass
 
 def plot_fio_vm(rrdb_file):
     pic = PIC_PATH + '/' + rrdb_file.split('/')[-1].replace('.rrd', '.png')
@@ -55,3 +72,8 @@ def plot_fio_vm(rrdb_file):
     subprocess.check_call(cmd, shell=True)
     return pic
 
+def plot_unixbench(rrdb_file):
+    pic = PIC_PATH + '/' + rrdb_file.split('/')[-1].replace('.rrd', '.png')
+    cmd = "rrdtool graph %s --title 'UnixBench score' DEF:score=%s:score:AVERAGE LINE1:score#FF0000:'score'" % (pic, rrdb_file)
+    subprocess.check_call(cmd, shell=True)
+    return pic
