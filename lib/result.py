@@ -19,7 +19,12 @@ RRD_CREATE_OPTION = {"fio-vm": ['--step', '300', 'DS:srthr:GAUGE:600:U:U', 'DS:s
                      'DS:rwthr:GAUGE:600:U:U', 'DS:rwiops:GAUGE:600:U:U',
                      'RRA:AVERAGE:0.5:1:600'],
                      "unixbench": ['--step', '1800', 'DS:score:GAUGE:3600:U:U',
-                     'RRA:AVERAGE:0.5:1:120']}
+                     'RRA:AVERAGE:0.5:1:120'],
+                     "linpack": ['--step', '300', 'DS:score:GAUGE:600:U:U',
+                     'RRA:AVERAGE:0.5:1:600'],
+                     "superpi": ['--step', '300', 'DS:score:GAUGE:600:U:U',
+                     'RRA:AVERAGE:0.5:1:600']
+                     }
 
 def update_rrdbs(testcase_name, rrdb_file, start_time, result_path):
     create_testcase_rrdb(testcase_name, rrdb_file, start_time)
@@ -27,7 +32,6 @@ def update_rrdbs(testcase_name, rrdb_file, start_time, result_path):
         update_fio_vm_rrdb(rrdb_file, start_time, result_path)
     elif testcase_name == "unixbench":
         update_fio_unixbench_rrdb(rrdb_file, start_time, result_path)
-
 
 def create_testcase_rrdb(testcase_name, rrdb_file, start_time):
     if not os.path.exists(rrdb_file):
