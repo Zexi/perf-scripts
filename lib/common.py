@@ -18,6 +18,12 @@ def unify_time(tz):
 def get_time(tz='Asia/Shanghai'):
     return unify_time(tz).strftime('%Y-%m-%d %H:%M:%S')
 
+def unify_localtime(tz='Asia/Shanghai'):
+    localtime = '/etc/localtime'
+    if tz not in os.path.realpath(localtime):
+        os.remove(localtime)
+        os.symlink('/usr/share/zoneinfo/' + tz, localtime)
+
 def dot_file(path):
     return os.path.dirname(path) + '/.' + os.path.basename(path)
 

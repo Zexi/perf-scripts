@@ -41,7 +41,7 @@ def run_each_job():
         subprocess.call(cmd, shell=True)
 
     cyclic_jobs_path = get_cyclic_jobs(SRC + '/etc/cyclic_jobs.yaml')
-    uploadurl = "http://172.30.26.228:8080/post"
+    uploadurl = "http://10.4.235.203:8080/results"
     for job_file_path in cyclic_jobs_path:
         job_obj = job.Job()
         job_obj.load(job_file_path)
@@ -49,6 +49,7 @@ def run_each_job():
         prefix = CYCLIC_PATH + os.path.splitext(os.path.basename(job_file_path))[0]
         job_obj.each_jobs(split_run_job)
 
+common.unify_localtime()
 schedule.every(6000).seconds.do(run_each_job)
 
 while True:
