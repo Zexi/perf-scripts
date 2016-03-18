@@ -66,7 +66,7 @@ job.load(jobfile)
 HOSTNAME = os.environ['HOSTNAME'] 
 job['testbox'] = HOSTNAME
 job['commit'] = subprocess.check_output('uname -r', shell=True).strip('\n')
-job['rootfs'] = subprocess.check_output('grep -m1 ^ID= /etc/os-release', shell=True).split('=')[1].strip('\n').replace('"', '')
+job['rootfs'] = subprocess.check_output('source %s/lib/detect-system.sh; detect_system; echo $_system_name_lowercase' % SRC, shell=True).strip('\n')
 job['start_time'] =  time.strftime(TIMEFORMAT, time.localtime())
 
 if opt_set_key_value:
