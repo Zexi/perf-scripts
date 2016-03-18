@@ -1,0 +1,14 @@
+#!/bin/bash
+
+WEB_URL="http://www.linuxfly.org/attachment/superpi_linux.tar.gz"
+
+build()
+{
+    :
+}
+
+install()
+{
+    cd $BM_NAME
+    cp -af * $BM_ROOT
+}

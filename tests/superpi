@@ -1,0 +1,6 @@
+#!/bin/sh
+# - digits
+
+cd $BENCHMARK_ROOT/superpi || exit
+
+cmd ./super_pi $digits
