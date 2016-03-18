@@ -44,6 +44,7 @@ def run_each_job():
     uploadurl = "http://10.4.235.203:8080/results"
     for job_file_path in cyclic_jobs_path:
         job_obj = job.Job()
+        job_obj.load_head("%s/hosts/%s" % (SRC, os.getenv("HOSTNAME")))
         job_obj.load(job_file_path)
         job_obj['enque_time'] = common.get_time()
         prefix = CYCLIC_PATH + os.path.splitext(os.path.basename(job_file_path))[0]
