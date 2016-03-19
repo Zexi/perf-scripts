@@ -1,0 +1,20 @@
+<div class="uk-grid" data-uk-grid-margin>
+  {% for i, pic in enumerate(pics) %}
+    <div class="uk-width-medium-1-3">
+      <div class="uk-thumbnail uk-overlay-hover" data-uk-modal="{target: '#modal-{{ prefix + str(i) }}'}">
+        <figure class="uk-overlay">
+          <img width="600" height="400" src="{{ static_url(pic) }}" alt="">
+          <figcaption class="uk-overlay-panel uk-overlay-icon uk-overlay-background uk-overlay-fade">
+          </figcaption>
+          <a class="uk-position-cover" href="#"></a>
+        </figure>
+      </div>
+      <div id="modal-{{ prefix + str(i) }}" class="uk-modal">
+        <div class="uk-modal-dialog uk-modal-dialog-lightbox">
+          <a href class="uk-modal-close uk-close uk-close-alt"></a>
+          <img width="600" height="400" src="{{ static_url(pic) }}" alt="">
+        </div>
+      </div>
+    </div>
+  {% end %}
+</div>

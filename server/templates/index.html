@@ -1,10 +1,14 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Test Perfomance Result Display</title>
-</head>
-<body>
-<h1>Show fio result</h1>
-<a href="/results/fio-vm">Fio result png</a>
-</body>
-</html>
+{% extends "main.html" %}
+
+{% block testcasename %}
+  <li class="uk-active">
+    <a href="#">All</a>
+  </li>
+  {% for i in pics_dict.keys() %}
+    {% module Item(i) %}
+  {% end %}
+{% end %}
+
+{% block pictures %}
+  {% module PicContent(pics_dict) %}
+{% end %}

@@ -1,0 +1,13 @@
+{% set all_pics = [] %}
+{% for v in pics_dict.values() %}
+  {% set all_pics += v %}
+{% end %}
+<li class="uk-active">
+  {% module Pic('all', all_pics) %}
+</li>
+
+{% for k in pics_dict %}
+  <li>
+    {% module Pic(k, pics_dict[k]) %}
+  </li>
+{% end %}

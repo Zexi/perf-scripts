@@ -28,14 +28,27 @@ class Application(tornado.web.Application):
         settings = dict(
                 template_path=os.path.join(os.path.dirname(__file__), "templates"),
                 static_path=os.path.join(os.path.dirname(__file__), "static"),
+                ui_modules={'Item': ItemModule, 'PicContent': PicContentModule, 'Pic': PicModule },
                 debug=True
                 )
 
         tornado.web.Application.__init__(self, handlers, **settings)
 
+class ItemModule(tornado.web.UIModule):
+    def render(self, item):
+        return self.render_string('modules/item.html', item=item)
+
+class PicContentModule(tornado.web.UIModule):
+    def render(self, pics_dict):
+        return self.render_string('modules/pic_content.html', pics_dict=pics_dict)
+
+class PicModule(tornado.web.UIModule):
+    def render(self, prefix, pics):
+        return self.render_string('modules/pic.html', prefix=prefix, pics=pics)
+
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('index.html', )
+        self.render('index.html', pics_dict={"unixbench": [], "fio": []})
 
 class ResultsHandler(tornado.web.RequestHandler):
     def get(self, testcase_name=None):
