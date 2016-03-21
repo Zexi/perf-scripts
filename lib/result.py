@@ -98,7 +98,7 @@ def plot_superpi(rrdb_file, path):
     return pic
 
 def get_testcase_pic(path=PIC_PATH):
-    testcases = [x.split('/')[-1] for x in subprocess.check_output('find %s -depth 1 -type d' % path, shell=True).split()]
+    testcases = [x.split('/')[-1] for x in subprocess.check_output('find %s -mindepth 1 -maxdepth 1 -type d' % path, shell=True).split()]
     testcase_pics = {}
     for testcase in testcases:
         testcase_pics[testcase] = [x.split('static/')[-1] for x in subprocess.check_output("find %s -regex '.*png$'" % (path + '/' + testcase), shell=True).split()]
