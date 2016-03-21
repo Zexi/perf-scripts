@@ -48,7 +48,7 @@ class PicModule(tornado.web.UIModule):
 
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('index.html', pics_dict={"unixbench": [], "fio": []})
+        self.render('index.html', pics_dict=result.get_testcase_pic())
 
 class ResultsHandler(tornado.web.RequestHandler):
     def get(self, testcase_name=None):
