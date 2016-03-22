@@ -31,14 +31,13 @@ RRD_CREATE_OPTION = {"fio-vm": ['--step', '300', 'DS:srthr:GAUGE:600:U:U', 'DS:s
 
 def update_rrdbs(testcase_name, rrdb_file, start_time, result_path):
     create_testcase_rrdb(testcase_name, rrdb_file, start_time)
-    if testcase_name == "fio-vm":
-        update_fio_vm_rrdb(rrdb_file, start_time, result_path)
-    elif testcase_name == "unixbench":
-        update_unixbench_rrdb(rrdb_file, start_time, result_path)
-    elif testcase_name == "superpi":
-        update_superpi_rrdb(rrdb_file, start_time, result_path)
-    elif testcase_name == "ping":
-        update_ping_rrdb(rrdb_file, start_time, result_path)
+    function_name = 'update_' + testcase_name.replace('-', '_') + '_rrdb'
+    # call each testcase name function
+    func = globals().get(function_name)
+    if func:
+        func(rrdb_file, start_time, result_path)
+    else:
+        pass
 
 def create_testcase_rrdb(testcase_name, rrdb_file, start_time):
     if not os.path.exists(rrdb_file):
@@ -77,36 +76,31 @@ def update_ping_rrdb(rrdb_file, start_time, result_path):
 
 def plot_rrdbs(testcase_name):
     same_testcase_rrdbs = subprocess.check_output("find %s -regex '.*%s.*'" % (RRDB_PATH, testcase_name), shell=True).split()
-    if testcase_name == 'fio-vm':
-        plot_fio_vm(same_testcase_rrdbs)
-    elif testcase_name == 'unixbench':
-        plot_unixbench(same_testcase_rrdbs)
-    elif testcase_name == 'superpi':
-        plot_superpi(same_testcase_rrdbs)
-    elif testcase_name == 'ping':
-        plot_ping(same_testcase_rrdbs)
+    function_name = 'plot_' + testcase_name.replace('-', '_')
+    # call each testcase name function
+    func = globals().get(function_name)
+    if func:
+        func(same_testcase_rrdbs, testcase_name)
     else:
         pass
 
 # decorator for each testcase plot
-def plot(testcase_name):
-    testcase_pic_path = PIC_PATH + '/' + testcase_name
-    if not os.path.exists(testcase_pic_path):
-        os.makedirs(testcase_pic_path, 02775)
-    def plot_dec(func):
-        def wrapper(rrdb_files):
-            pic_prefix = testcase_pic_path + '/' + testcase_name
-            cmds = func(rrdb_files)
-            for index, cmd in enumerate(cmds):
-                rrdtool.graph(pic_prefix+str(index)+'.png',
-                              '--imgformat', 'PNG',
-                              '--width', '600',
-                              '--height', '400',
-                              '--title', cmd["title"],
-                              cmd["DEF"],
-                              cmd["LINE"])
-        return wrapper
-    return plot_dec
+def plot(func):
+    def wrapper(rrdb_files, testcase_name):
+        testcase_pic_path = PIC_PATH + '/' + testcase_name
+        if not os.path.exists(testcase_pic_path):
+            os.makedirs(testcase_pic_path, 02775)
+        pic_prefix = testcase_pic_path + '/' + testcase_name
+        cmds = gen_cmds(rrdb_files, func())
+        for index, cmd in enumerate(cmds):
+            rrdtool.graph(pic_prefix+str(index)+'.png',
+                          '--imgformat', 'PNG',
+                          '--width', '600',
+                          '--height', '400',
+                          '--title', cmd["title"],
+                          cmd["DEF"],
+                          cmd["LINE"])
+    return wrapper
 
 def gen_each_cmd(rrdb_files, title, defcmds, linecmds):
     colors = [['FF0000', 'FF00FF'], ['006633', '660099']]
@@ -131,8 +125,8 @@ def gen_cmds(rrdb_files, will_plot_cmds):
         cmds.append(gen_each_cmd(rrdb_files, cmd_dict['title'], cmd_dict['def'], cmd_dict['line']))
     return cmds
 
-@plot('fio-vm')
-def plot_fio_vm(rrdb_files):
+@plot
+def plot_fio_vm():
     will_plot_cmds = [{
         'title': 'Fio seq read/write throughput',
         'def': ["DEF:%s_srthr=%s:srthr:AVERAGE", "DEF:%s_swthr=%s:swthr:AVERAGE"],
@@ -150,35 +144,35 @@ def plot_fio_vm(rrdb_files):
         'def': ["DEF:%s_rriops=%s:rriops:AVERAGE", "DEF:%s_rwiops=%s:rwiops:AVERAGE"],
         'line': ["LINE1:%s_rriops#%s:%s rand read iops", "LINE2:%s_rwiops#%s:%s rand write iops"]}]
 
-    return gen_cmds(rrdb_files, will_plot_cmds)
+    return will_plot_cmds
 
-@plot('unixbench')
-def plot_unixbench(rrdb_files):
-    cmd = "--title 'UnixBench score' DEF:score=%s:score:AVERAGE LINE1:score#FF0000:'score'" % (rrdb_file)
+@plot
+def plot_unixbench():
     will_plot_cmds = [{
         'title': 'UnixBench score',
         'def': ["DEF:%s_score=%s:score:AVERAGE"],
         'line': ["LINE1:%s_score#%s:%s score"]
         }]
-    return gen_cmds(rrdb_files, will_plot_cmds)
+    return will_plot_cmds
 
-@plot('superpi')
-def plot_superpi(rrdb_files):
+@plot
+def plot_superpi():
     will_plot_cmds = [{
         'title': 'SuperPi compute 20 digits time',
         'def': ["DEF:%s_time=%s:time:AVERAGE"],
         'line': ["LINE1:%s_time#%s:%s elapsed time"]}]
 
-    return gen_cmds(rrdb_files, will_plot_cmds)
+    return will_plot_cmds
 
-@plot('ping')
-def plot_ping(rrdb_files):
+@plot
+def plot_ping():
     will_plot_cmds = [{
         'title': 'ping www.baidu.com time',
         'def': ["DEF:%s_time=%s:time:AVERAGE"],
         'line': ["LINE1:%s_time#%s:%s elapsed time"]}]
 
-    return gen_cmds(rrdb_files, will_plot_cmds)
+    return will_plot_cmds
+
 def get_testcase_pic(path=PIC_PATH):
     testcases = [x.split('/')[-1] for x in subprocess.check_output('find %s -mindepth 1 -maxdepth 1 -type d' % path, shell=True).split()]
     testcase_pics = {}
