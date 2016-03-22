@@ -1,0 +1,10 @@
+#!/bin/sh
+# - run_times
+# - mem_size
+
+## MBW determines the "copy" memory bandwidth available to userspace programs.
+## Its simplistic approach models that of real applications.
+
+cd $BENCHMARK_ROOT/mbw || exit
+
+cmd ./mbw -n $run_times $mem_size

@@ -1,0 +1,5 @@
+testcase: mbw
+
+mbw:
+  run_times: 50
+  mem_size: 128
