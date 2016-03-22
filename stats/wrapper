@@ -82,7 +82,6 @@ fi
 
 grep -q "^$program\." $SRC/etc/failure ||
 check_incomplete_run $tmpfile
-cat $tmpfile
 
 warn_empty_stats
 
