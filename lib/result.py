@@ -24,6 +24,8 @@ RRD_CREATE_OPTION = {"fio-vm": ['--step', '300', 'DS:srthr:GAUGE:600:U:U', 'DS:s
                      "linpack": ['--step', '300', 'DS:score:GAUGE:600:U:U',
                      'RRA:AVERAGE:0.5:1:600'],
                      "superpi": ['--step', '300', 'DS:time:GAUGE:600:U:U',
+                     'RRA:AVERAGE:0.5:1:600'],
+                     "ping": ['--step', '1500', 'DS:time:GAUGE:3000:U:U',
                      'RRA:AVERAGE:0.5:1:600']
                      }
 
@@ -35,6 +37,8 @@ def update_rrdbs(testcase_name, rrdb_file, start_time, result_path):
         update_unixbench_rrdb(rrdb_file, start_time, result_path)
     elif testcase_name == "superpi":
         update_superpi_rrdb(rrdb_file, start_time, result_path)
+    elif testcase_name == "ping":
+        update_ping_rrdb(rrdb_file, start_time, result_path)
 
 def create_testcase_rrdb(testcase_name, rrdb_file, start_time):
     if not os.path.exists(rrdb_file):
@@ -65,6 +69,12 @@ def update_superpi_rrdb(rrdb_file, start_time, result_path):
     rrdupdate_cmd = "%d:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), pitime)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
+def update_ping_rrdb(rrdb_file, start_time, result_path):
+    res = common.load_json(result_path.replace('"', '') + '/ping.json')
+    pingtime = res['ping.avg_time'][0]
+    rrdupdate_cmd = "%d:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), pingtime)
+    rrdtool.update(rrdb_file, rrdupdate_cmd)
+
 def plot_rrdbs(testcase_name):
     same_testcase_rrdbs = subprocess.check_output("find %s -regex '.*%s.*'" % (RRDB_PATH, testcase_name), shell=True).split()
     if testcase_name == 'fio-vm':
@@ -73,6 +83,8 @@ def plot_rrdbs(testcase_name):
         plot_unixbench(same_testcase_rrdbs)
     elif testcase_name == 'superpi':
         plot_superpi(same_testcase_rrdbs)
+    elif testcase_name == 'ping':
+        plot_ping(same_testcase_rrdbs)
     else:
         pass
 
@@ -159,6 +171,14 @@ def plot_superpi(rrdb_files):
 
     return gen_cmds(rrdb_files, will_plot_cmds)
 
+@plot('ping')
+def plot_ping(rrdb_files):
+    will_plot_cmds = [{
+        'title': 'ping www.baidu.com time',
+        'def': ["DEF:%s_time=%s:time:AVERAGE"],
+        'line': ["LINE1:%s_time#%s:%s elapsed time"]}]
+
+    return gen_cmds(rrdb_files, will_plot_cmds)
 def get_testcase_pic(path=PIC_PATH):
     testcases = [x.split('/')[-1] for x in subprocess.check_output('find %s -mindepth 1 -maxdepth 1 -type d' % path, shell=True).split()]
     testcase_pics = {}
