@@ -1,0 +1,14 @@
+#!/bin/sh
+# - count
+# - host
+
+## The ping utility uses the ICMP protocol's mandatory ECHO_REQUEST datagram
+## to elicit an ICMP ECHO_RESPONSE from a host or gateway.  ECHO_REQUEST
+## datagrams (``pings'') have an IP and ICMP header, followed by a ``struct
+## timeval'' and then an arbitrary number of ``pad'' bytes used to fill out
+## the packet.
+
+[ -n "$count" ] || count=5
+[ "$host" ] || host=www.baidu.com
+
+cmd ping -c $count $host

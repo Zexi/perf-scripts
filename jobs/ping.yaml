@@ -1,0 +1,6 @@
+testcase: ping
+
+ping:
+  count: 50
+  host: www.baidu.com
+

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+avg_time=`tail -1 | awk '{print $4}' | cut -d '/' -f 2`
+echo "avg_time: $avg_time"
