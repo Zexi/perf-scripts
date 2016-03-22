@@ -19,13 +19,21 @@ RRD_CREATE_OPTION = {"fio-vm": ['--step', '300', 'DS:srthr:GAUGE:600:U:U', 'DS:s
                      'DS:swthr:GAUGE:600:U:U', 'DS:swiops:GAUGE:600:U:U',
                      'DS:rwthr:GAUGE:600:U:U', 'DS:rwiops:GAUGE:600:U:U',
                      'RRA:AVERAGE:0.5:1:600'],
+
                      "unixbench": ['--step', '1800', 'DS:score:GAUGE:3600:U:U',
                      'RRA:AVERAGE:0.5:1:120'],
+
                      "linpack": ['--step', '300', 'DS:score:GAUGE:600:U:U',
                      'RRA:AVERAGE:0.5:1:600'],
+
                      "superpi": ['--step', '300', 'DS:time:GAUGE:600:U:U',
                      'RRA:AVERAGE:0.5:1:600'],
+
                      "ping": ['--step', '1500', 'DS:time:GAUGE:3000:U:U',
+                     'RRA:AVERAGE:0.5:1:600'],
+
+                     "mbw": ['--step', '300', 'DS:memcpy:GAUGE:600:U:U',
+                     'DS:dumb:GAUGE:600:U:U', 'DS:mcblock:GAUGE:600:U:U',
                      'RRA:AVERAGE:0.5:1:600']
                      }
 
@@ -72,6 +80,15 @@ def update_ping_rrdb(rrdb_file, start_time, result_path):
     res = common.load_json(result_path.replace('"', '') + '/ping.json')
     pingtime = res['ping.avg_time'][0]
     rrdupdate_cmd = "%d:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), pingtime)
+    rrdtool.update(rrdb_file, rrdupdate_cmd)
+
+def update_mbw_rrdb(rrdb_file, start_time, result_path):
+    res = common.load_json(result_path.replace('"', '') + '/mbw.json')
+    memcpy_bw = res['mbw.memcpy_avg'][0]
+    dump_bw = res['mbw.dump_avg'][0]
+    mcblock_bw = res['mbw.mcblock_avg'][0]
+
+    rrdupdate_cmd = "%d:%f:%f:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), memcpy_bw, dump_bw, mcblock_bw)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
 def plot_rrdbs(testcase_name):
@@ -170,6 +187,23 @@ def plot_ping():
         'title': 'ping www.baidu.com time',
         'def': ["DEF:%s_time=%s:time:AVERAGE"],
         'line': ["LINE1:%s_time#%s:%s elapsed time"]}]
+
+    return will_plot_cmds
+
+@plot
+def plot_mbw():
+    will_plot_cmds = [{
+        'title': 'MEMCPY METHOD Bandwidth',
+        'def': ["DEF:%s_memcpy=%s:memcpy:AVERAGE"],
+        'line': ["LINE1:%s_memcpy#%s:%s memcpy method bandwidth"]},
+
+        {'title': 'DUMB METHOD Bandwidth',
+        'def': ["DEF:%s_dumb=%s:dumb:AVERAGE"],
+        'line': ["LINE1:%s_dumb#%s:%s dumb method bandwidth"]},
+
+        {'title': 'MCBLOCK METHOD Bandwidth',
+        'def': ["DEF:%s_mcblock=%s:mcblock:AVERAGE"],
+        'line': ["LINE1:%s_mcblock#%s:%s mcblock method bandwidth"]}]
 
     return will_plot_cmds
 
