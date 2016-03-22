@@ -115,11 +115,12 @@ def plot(func):
                           '--width', '600',
                           '--height', '400',
                           '--title', cmd["title"],
+                          '--vertical-label', cmd["v-label"],
                           cmd["DEF"],
                           cmd["LINE"])
     return wrapper
 
-def gen_each_cmd(rrdb_files, title, defcmds, linecmds):
+def gen_each_cmd(rrdb_files, title, v_label, defcmds, linecmds):
     colors = [['FF0000', 'FF00FF'], ['006633', '660099']]
     defs = []
     lines = []
@@ -134,30 +135,34 @@ def gen_each_cmd(rrdb_files, title, defcmds, linecmds):
             lines.append(cmd % (hnv, colors[i][j], hn))
             j += 1
         i += 1
-    return {"title": title, "DEF": defs, "LINE": lines}
+    return {"title": title, "v-label": v_label, "DEF": defs, "LINE": lines}
 
 def gen_cmds(rrdb_files, will_plot_cmds):
     cmds = []
     for cmd_dict in will_plot_cmds:
-        cmds.append(gen_each_cmd(rrdb_files, cmd_dict['title'], cmd_dict['def'], cmd_dict['line']))
+        cmds.append(gen_each_cmd(rrdb_files, cmd_dict['title'], cmd_dict['v-label'], cmd_dict['def'], cmd_dict['line']))
     return cmds
 
 @plot
 def plot_fio_vm():
     will_plot_cmds = [{
         'title': 'Fio seq read/write throughput',
+        'v-label': 'throughput KB/s',
         'def': ["DEF:%s_srthr=%s:srthr:AVERAGE", "DEF:%s_swthr=%s:swthr:AVERAGE"],
         'line': ["LINE1:%s_srthr#%s:%s seq read throughput", "LINE2:%s_swthr#%s:%s seq write throughput"]},
 
         {'title': 'Fio seq read/write iops',
+        'v-label': 'iops',
         'def': ["DEF:%s_sriops=%s:sriops:AVERAGE", "DEF:%s_swiops=%s:swiops:AVERAGE"],
         'line': ["LINE1:%s_sriops#%s:%s seq read iops", "LINE2:%s_swiops#%s:%s seq write iops"]},
 
         {'title': 'Fio rand read/write throughput',
+        'v-label': 'throughput KB/s',
         'def': ["DEF:%s_rrthr=%s:rrthr:AVERAGE", "DEF:%s_rwthr=%s:rwthr:AVERAGE"],
         'line': ["LINE1:%s_rrthr#%s:%s rand read throughput", "LINE2:%s_rwthr#%s:%s rand write throughput"]},
 
         {'title': 'Fio rand read/write iops',
+        'v-label': 'iops',
         'def': ["DEF:%s_rriops=%s:rriops:AVERAGE", "DEF:%s_rwiops=%s:rwiops:AVERAGE"],
         'line': ["LINE1:%s_rriops#%s:%s rand read iops", "LINE2:%s_rwiops#%s:%s rand write iops"]}]
 
@@ -167,6 +172,7 @@ def plot_fio_vm():
 def plot_unixbench():
     will_plot_cmds = [{
         'title': 'UnixBench score',
+        'v-label': 'score',
         'def': ["DEF:%s_score=%s:score:AVERAGE"],
         'line': ["LINE1:%s_score#%s:%s score"]
         }]
@@ -176,6 +182,7 @@ def plot_unixbench():
 def plot_superpi():
     will_plot_cmds = [{
         'title': 'SuperPi compute 20 digits time',
+        'v-label': 'time /s',
         'def': ["DEF:%s_time=%s:time:AVERAGE"],
         'line': ["LINE1:%s_time#%s:%s elapsed time"]}]
 
@@ -185,6 +192,7 @@ def plot_superpi():
 def plot_ping():
     will_plot_cmds = [{
         'title': 'ping www.baidu.com time',
+        'v-label': 'time /s',
         'def': ["DEF:%s_time=%s:time:AVERAGE"],
         'line': ["LINE1:%s_time#%s:%s elapsed time"]}]
 
@@ -194,14 +202,17 @@ def plot_ping():
 def plot_mbw():
     will_plot_cmds = [{
         'title': 'MEMCPY METHOD Bandwidth',
+        'v-label': 'mem bandwidth MiB/s',
         'def': ["DEF:%s_memcpy=%s:memcpy:AVERAGE"],
         'line': ["LINE1:%s_memcpy#%s:%s memcpy method bandwidth"]},
 
         {'title': 'DUMB METHOD Bandwidth',
+        'v-label': 'mem bandwidth MiB/s',
         'def': ["DEF:%s_dumb=%s:dumb:AVERAGE"],
         'line': ["LINE1:%s_dumb#%s:%s dumb method bandwidth"]},
 
         {'title': 'MCBLOCK METHOD Bandwidth',
+        'v-label': 'mem bandwidth MiB/s',
         'def': ["DEF:%s_mcblock=%s:mcblock:AVERAGE"],
         'line': ["LINE1:%s_mcblock#%s:%s mcblock method bandwidth"]}]
 
