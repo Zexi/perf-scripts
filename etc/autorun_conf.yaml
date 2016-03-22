@@ -1,0 +1,10 @@
+runtime: 300
+
+server:
+  hostname: 172.30.26.228
+  port: 8080
+  res: results
+
+jobs:
+  - superpi
+  - ping

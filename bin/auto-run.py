@@ -14,12 +14,22 @@ sys.path.insert(0, LIB_PATH)
 import job
 import common
 
-def get_cyclic_jobs(cyclic_file):
-    with open(cyclic_file) as f:
-        cyclic_jobs = yaml.load(f)
-        return [SRC + '/jobs/' + path + '.yaml' for path in cyclic_jobs['jobs']]
+def get_cyclic_jobs(conf_dict):
+    return [SRC + '/jobs/' + path + '.yaml' for path in conf_dict['jobs']]
 
-def run_each_job():
+def get_upload_url(conf_dit):
+    def load_server_conf(conf_dict):
+        server_conf = conf_dict['server']
+        url = 'http://%s:%s/%s' % (server_conf['hostname'], server_conf['port'], server_conf['res'])
+        return url
+    return load_server_conf(conf_dict)
+
+def load_conf(conf_file):
+    with open(conf_file) as f:
+        conf_dict = yaml.load(f)
+        return conf_dict
+
+def run_each_job(conf_dict):
     if not os.path.exists(CYCLIC_PATH):
         os.makedirs(CYCLIC_PATH, 02775)
 
@@ -40,8 +50,8 @@ def run_each_job():
         cmd = "%s run -j %s -u %s" % (SRC + '/bin/pst', unit_jobfile, uploadurl)
         subprocess.call(cmd, shell=True)
 
-    cyclic_jobs_path = get_cyclic_jobs(SRC + '/etc/cyclic_jobs.yaml')
-    uploadurl = "http://10.4.235.203:8080/results"
+    cyclic_jobs_path = get_cyclic_jobs(conf_dict)
+    uploadurl = get_upload_url(conf_dict)
     for job_file_path in cyclic_jobs_path:
         job_obj = job.Job()
         job_obj.load_head("%s/hosts/%s" % (SRC, os.getenv("HOSTNAME")))
@@ -51,7 +61,8 @@ def run_each_job():
         job_obj.each_jobs(split_run_job)
 
 common.unify_localtime()
-schedule.every(6000).seconds.do(run_each_job)
+conf_dict = load_conf(SRC + '/etc/autorun_conf.yaml')
+schedule.every(conf_dict["runtime"]).seconds.do(run_each_job, conf_dict)
 
 while True:
     schedule.run_pending()
