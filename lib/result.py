@@ -61,7 +61,7 @@ def create_testcase_rrdb(testcase_name, rrdb_file, start_time, job_params=None):
     if job_params:
         rrd_create_index = (testcase_name + '_' + job_params).replace('-', '_')
     else:
-        rrd_create_index = testcase
+        rrd_create_index = testcase_name
     if not os.path.exists(rrdb_file):
         rrdb = rrdtool.create(rrdb_file, '--start', '%d' % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()) - 300), RRD_CREATE_OPTION[rrd_create_index])
 
