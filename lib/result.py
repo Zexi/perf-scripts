@@ -121,7 +121,12 @@ def plot_rrdbs(testcase_prefix):
 # decorator for each testcase plot
 def plot(func):
     def wrapper(rrdb_files, testcase_name, job_params, testbox, rootfs, commit, testcase_prefix):
-        testcase_pic_path = PIC_PATH + '/' + testcase_prefix
+        '''
+        As for now, only use testcase_name and job_params to plot
+        because I just compare different job_params of each testbox.
+        Maybe should improve to support all kinds of compare.
+        '''
+        testcase_pic_path = "%s/%s/%s" % (PIC_PATH, testcase_name, job_params)
         if not os.path.exists(testcase_pic_path):
             os.makedirs(testcase_pic_path, 02775)
         pic_prefix = testcase_pic_path + '/' + 'pic'
