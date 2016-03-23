@@ -18,6 +18,8 @@ sys.path.insert(0, LIB_PATH)
 import common
 import result
 
+DIFF_SUB_TEST = ['sysbench']
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -86,8 +88,12 @@ class ResultsHandler(tornado.web.RequestHandler):
             if not os.path.exists(RRDB_PATH + '/' + testcase_prefix):
                 os.makedirs(RRDB_PATH + '/' + testcase_prefix, 02775)
             result_path = '%s/results/%s/%s' % (WORKSPACE, testcase_prefix, start_time)
-            result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path)
-            result.plot_rrdbs(testcase_prefix)
+            if testcase in DIFF_SUB_TEST:
+                result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path, job_params)
+                result.plot_rrdbs(testcase_prefix, job_params)
+            else:
+                result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path)
+                result.plot_rrdbs(testcase_prefix)
 
 if __name__ == "__main__":
     tornado.options.parse_command_line()

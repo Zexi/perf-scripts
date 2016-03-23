@@ -34,12 +34,22 @@ RRD_CREATE_OPTION = {"fio-vm": ['--step', '300', 'DS:srthr:GAUGE:600:U:U', 'DS:s
 
                      "mbw": ['--step', '300', 'DS:memcpy:GAUGE:600:U:U',
                      'DS:dumb:GAUGE:600:U:U', 'DS:mcblock:GAUGE:600:U:U',
-                     'RRA:AVERAGE:0.5:1:600']
+                     'RRA:AVERAGE:0.5:1:600'],
+
+                     "sysbench_cpu": ['--step', '300', 'DS:cpu_time:GAUGE:600:U:U',
+                     'RRA:AVERAGE:0.5:1:600'],
+
+                     "sysbench_oltp": ['--step', '300', 'DS:tps:GAUGE:600:U:U',
+                     'DS:qps:GAUGE:600:U:U', 'RRA:AVERAGE:0.5:1:600']
                      }
 
-def update_rrdbs(testcase_name, rrdb_file, start_time, result_path):
-    create_testcase_rrdb(testcase_name, rrdb_file, start_time)
-    function_name = 'update_' + testcase_name.replace('-', '_') + '_rrdb'
+def update_rrdbs(testcase_name, rrdb_file, start_time, result_path, job_params=None):
+    create_testcase_rrdb(testcase_name, rrdb_file, start_time, job_params)
+    if job_params:
+        suffix = (testcase_name + '_' + job_params).replace('-', '_')
+    else:
+        suffix = testcase_name.replace('-', '_')
+    function_name = 'update_' + suffix + '_rrdb'
     # call each testcase name function
     func = globals().get(function_name)
     if func:
@@ -47,9 +57,13 @@ def update_rrdbs(testcase_name, rrdb_file, start_time, result_path):
     else:
         pass
 
-def create_testcase_rrdb(testcase_name, rrdb_file, start_time):
+def create_testcase_rrdb(testcase_name, rrdb_file, start_time, job_params=None):
+    if job_params:
+        rrd_create_index = (testcase_name + '_' + job_params).replace('-', '_')
+    else:
+        rrd_create_index = testcase
     if not os.path.exists(rrdb_file):
-        rrdb = rrdtool.create(rrdb_file, '--start', '%d' % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()) - 300), RRD_CREATE_OPTION[testcase_name])
+        rrdb = rrdtool.create(rrdb_file, '--start', '%d' % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()) - 300), RRD_CREATE_OPTION[rrd_create_index])
 
 def update_fio_vm_rrdb(rrdb_file, start_time, result_path):
     fio_res = common.load_json(result_path.replace('"', '') + '/fio.json')
@@ -91,6 +105,21 @@ def update_mbw_rrdb(rrdb_file, start_time, result_path):
     rrdupdate_cmd = "%d:%f:%f:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), memcpy_bw, dump_bw, mcblock_bw)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
+def update_sysbench_cpu_rrdb(rrdb_file, start_time, result_path):
+    res = common.load_json(result_path.replace('"', '') + '/sysbench.json')
+    cpu_time = res['sysbench.cpu_time'][0]
+
+    rrdupdate_cmd = "%d:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), cpu_time)
+    rrdtool.update(rrdb_file, rrdupdate_cmd)
+
+def update_sysbench_oltp_rrdb(rrdb_file, start_time, result_path):
+    res = common.load_json(result_path.replace('"', '') + '/sysbench.json')
+    tps = res['sysbench.TPS'][0]
+    qps = res['sysbench.QPS'][0]
+
+    rrdupdate_cmd = "%d:%f:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), tps, qps)
+    rrdtool.update(rrdb_file, rrdupdate_cmd)
+
 def find_same_testcase_rrdbs(testcase_name, job_params):
     '''
     This function only find rrdb according testcase and params,
@@ -101,7 +130,7 @@ def find_same_testcase_rrdbs(testcase_name, job_params):
     same_testcase_rrdbs = subprocess.check_output("find %s -type f -regex '.*%s.*'" % (RRDB_PATH, find_re), shell=True).split()
     return same_testcase_rrdbs
 
-def plot_rrdbs(testcase_prefix):
+def plot_rrdbs(testcase_prefix, job_params=None):
     testcase_info = testcase_prefix.split('/')
     testcase_name = testcase_info[0]
     job_params = testcase_info[1]
@@ -110,7 +139,11 @@ def plot_rrdbs(testcase_prefix):
     commit = testcase_info[4]
 
     same_testcase_rrdbs = find_same_testcase_rrdbs(testcase_name, job_params)
-    function_name = 'plot_' + testcase_name.replace('-', '_')
+    if job_params:
+        suffix = (testcase_name + '_' + job_params).replace('-', '_')
+    else:
+        suffix = testcase_name.replace('-', '_')
+    function_name = 'plot_' + suffix
     # call each testcase name function
     func = globals().get(function_name)
     if func:
@@ -237,6 +270,31 @@ def plot_mbw(job_params):
         'v-label': 'mem bandwidth MiB/s',
         'def': ["DEF:%s_mcblock=%s:mcblock:AVERAGE"],
         'line': ["LINE1:%s_mcblock#%s:%s mcblock method bandwidth"]}]
+
+    return will_plot_cmds
+
+@plot
+def plot_sysbench_cpu(job_params):
+    will_plot_cmds = [{
+        'title': 'Sysbench maximum prime number checked in CPU test: 20000',
+        'v-label': 'time /s',
+        'def': ["DEF:%s_cpu_time=%s:cpu_time:AVERAGE"],
+        'line': ["LINE1:%s_cpu_time#%s:%s elapsed time"]}]
+
+    return will_plot_cmds
+
+@plot
+def plot_sysbench_oltp(job_params):
+    will_plot_cmds = [{
+        'title': 'Sysbench %s about mysql TPS' % job_params,
+        'v-label': 'time /s',
+        'def': ["DEF:%s_tps=%s:tps:AVERAGE"],
+        'line': ["LINE1:%s_tps#%s:%s TPS per sec"]},
+
+        {'title': 'Sysbench %s about mysql QPS' % job_params,
+        'v-label': 'time /s',
+        'def': ["DEF:%s_qps=%s:qps:AVERAGE"],
+        'line': ["LINE1:%s_qps#%s:%s QPS per sec"]}]
 
     return will_plot_cmds
 
