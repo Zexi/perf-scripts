@@ -1,0 +1,14 @@
+testcase: sysbench
+category: benchmark
+
+sysbench:
+  cpu_max_prime: 20000
+  oltp_table_size: 1000000
+  mysql_db: test
+  mysql_user: root
+  mysql_pass: pass
+  max_time: 60
+  num_threads: 8
+  test:
+  - cpu
+  - oltp

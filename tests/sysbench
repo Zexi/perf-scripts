@@ -1,0 +1,38 @@
+#!/bin/sh
+# - test
+
+## SysBench is a modular, cross-platform and multi-threaded benchmark tool for evaluating
+## OS parameters that are important for a system running a database under intensive load.
+## The idea of this benchmark suite is to quickly get an impression about system
+## performance without setting up complex database benchmarks or even without
+## installing a database at all.
+## Current features allow to test the following system parameters:
+##   * file I/O performance
+##   * scheduler performance
+##   * memory allocation and transfer speed
+##   * POSIX threads implementation performance
+##   * database server performance (OLTP benchmark)
+
+cpu_test()
+{
+    cmd sysbench --test=cpu --cpu-max-prime=$cpu_max_prime run
+}
+
+oltp_test()
+{
+    pre_cmd="sysbench --test=oltp --oltp-table-size=$oltp_table_size --mysql-db=$mysql_db --mysql-user=$mysql_user --mysql-password=$mysql_pass prepare --db-driver=mysql"
+    run_cmd="sysbench --test=oltp --oltp-table-size=$oltp_table_size --mysql-db=$mysql_db --mysql-user=$mysql_user --mysql-password=$mysql_pass --max-time=$max_time  --oltp-read-only=on --max-requests=0 --num-threads=$num_threads run --db-driver=mysql"
+    clean_cmd="sysbench --test=oltp --mysql-db=$mysql_db --mysql-user=$mysql_user --mysql-password=$mysql_pass cleanup --db-driver=mysql"
+
+    for cmd in "$pre_cmd" "$run_cmd" "$clean_cmd"; do
+        echo "$(date +'%F %T') ${cmd}" | tee -a $RESULT_ROOT/reproduce.sh
+        ${cmd}
+    done
+}
+
+case $test in
+    cpu)
+        cpu_test ;;
+    oltp)
+        oltp_test ;;
+esac

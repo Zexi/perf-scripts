@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import re
+
+cpu_time = oltp_tps = oltp_qps = None
+
+for line in sys.stdin:
+    cpu_time_m = re.search(r'^\s+total time:\s+([0-9.]+)s', line)
+    oltp_tps_m = re.search(r'^\s+transactions:[0-9\s]+\(([0-9.]+) per sec.\)', line)
+    oltp_qps_m = re.search(r'^\s+read/write requests:[0-9\s]+\(([0-9.]+) per sec.\)', line)
+    if cpu_time_m:
+        cpu_time = cpu_time_m.group(1)
+    elif oltp_tps_m:
+        oltp_tps = oltp_tps_m.group(1)
+    elif oltp_qps_m:
+        oltp_qps = oltp_qps_m.group(1)
+if cpu_time:
+    print("cpu_time: " + cpu_time)
+if oltp_tps:
+    print("TPS: " + oltp_tps)
+if oltp_qps:
+    print("QPS: " + oltp_qps)
