@@ -99,7 +99,7 @@ You can run server in localhost，remember change the IP:127.0.0.1 in  **etc/aut
 	$ ./server/server.py
 ```
 
-Afterwards, *bin/auto-run.py** will auto run a group of jobs and upload results to server, then open http://$server_ip:$port in browser you can see different testcase picture.
+Afterwards, **bin/auto-run.py** will auto run a group of jobs and upload results to server, then open http://$server_ip:$port in browser you can see different testcase picture.
 
 Server display screenshot show below：
 ![Result Img](http://chuantu.biz/t2/33/1458762529x1035372911.png)
