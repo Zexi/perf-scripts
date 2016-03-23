@@ -91,30 +91,47 @@ def update_mbw_rrdb(rrdb_file, start_time, result_path):
     rrdupdate_cmd = "%d:%f:%f:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), memcpy_bw, dump_bw, mcblock_bw)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
-def plot_rrdbs(testcase_name):
-    same_testcase_rrdbs = subprocess.check_output("find %s -regex '.*%s.*'" % (RRDB_PATH, testcase_name), shell=True).split()
+def find_same_testcase_rrdbs(testcase_name, job_params):
+    '''
+    This function only find rrdb according testcase and params,
+    should support multi dimension find by testcase, params,
+    testbox, rootfs and commit.
+    '''
+    find_re = "%s/%s" % (testcase_name, job_params)
+    same_testcase_rrdbs = subprocess.check_output("find %s -type f -regex '.*%s.*'" % (RRDB_PATH, find_re), shell=True).split()
+    return same_testcase_rrdbs
+
+def plot_rrdbs(testcase_prefix):
+    testcase_info = testcase_prefix.split('/')
+    testcase_name = testcase_info[0]
+    job_params = testcase_info[1]
+    testbox = testcase_info[2]
+    rootfs = testcase_info[3]
+    commit = testcase_info[4]
+
+    same_testcase_rrdbs = find_same_testcase_rrdbs(testcase_name, job_params)
     function_name = 'plot_' + testcase_name.replace('-', '_')
     # call each testcase name function
     func = globals().get(function_name)
     if func:
-        func(same_testcase_rrdbs, testcase_name)
+        func(same_testcase_rrdbs, testcase_name, job_params, testbox, rootfs, commit, testcase_prefix)
     else:
         pass
 
 # decorator for each testcase plot
 def plot(func):
-    def wrapper(rrdb_files, testcase_name):
-        testcase_pic_path = PIC_PATH + '/' + testcase_name
+    def wrapper(rrdb_files, testcase_name, job_params, testbox, rootfs, commit, testcase_prefix):
+        testcase_pic_path = PIC_PATH + '/' + testcase_prefix
         if not os.path.exists(testcase_pic_path):
             os.makedirs(testcase_pic_path, 02775)
-        pic_prefix = testcase_pic_path + '/' + testcase_name
-        cmds = gen_cmds(rrdb_files, func())
+        pic_prefix = testcase_pic_path + '/' + 'pic'
+        cmds = gen_cmds(rrdb_files, func(job_params))
         for index, cmd in enumerate(cmds):
-            rrdtool.graph(pic_prefix+str(index)+'.png',
+            rrdtool.graph(str(pic_prefix+str(index)+'.png'),
                           '--imgformat', 'PNG',
                           '--width', '600',
                           '--height', '400',
-                          '--title', cmd["title"],
+                          '--title', str(cmd["title"]),
                           '--vertical-label', cmd["v-label"],
                           cmd["DEF"],
                           cmd["LINE"])
@@ -124,7 +141,7 @@ def gen_each_cmd(rrdb_files, title, v_label, defcmds, linecmds):
     colors = [['FF0000', 'FF00FF'], ['006633', '660099']]
     defs = []
     lines = []
-    hn_with_rrdb = [(x.split('--')[-1].replace('.rrd', ''), x) for x in rrdb_files]
+    hn_with_rrdb = [(x.split('/rrdb/')[-1].split('/')[2], x) for x in rrdb_files]
     i = 0
     for hn, rrdb in hn_with_rrdb:
         hnv = re.sub(r'[-.]', '', hn)
@@ -144,7 +161,7 @@ def gen_cmds(rrdb_files, will_plot_cmds):
     return cmds
 
 @plot
-def plot_fio_vm():
+def plot_fio_vm(job_params):
     will_plot_cmds = [{
         'title': 'Fio seq read/write throughput',
         'v-label': 'throughput KB/s',
@@ -169,7 +186,7 @@ def plot_fio_vm():
     return will_plot_cmds
 
 @plot
-def plot_unixbench():
+def plot_unixbench(job_params):
     will_plot_cmds = [{
         'title': 'UnixBench score',
         'v-label': 'score',
@@ -179,9 +196,9 @@ def plot_unixbench():
     return will_plot_cmds
 
 @plot
-def plot_superpi():
+def plot_superpi(job_params):
     will_plot_cmds = [{
-        'title': 'SuperPi compute 20 digits time',
+        'title': 'SuperPi compute %s digits time' % job_params,
         'v-label': 'time /s',
         'def': ["DEF:%s_time=%s:time:AVERAGE"],
         'line': ["LINE1:%s_time#%s:%s elapsed time"]}]
@@ -189,7 +206,7 @@ def plot_superpi():
     return will_plot_cmds
 
 @plot
-def plot_ping():
+def plot_ping(job_params):
     will_plot_cmds = [{
         'title': 'ping www.baidu.com time',
         'v-label': 'time /s',
@@ -199,7 +216,7 @@ def plot_ping():
     return will_plot_cmds
 
 @plot
-def plot_mbw():
+def plot_mbw(job_params):
     will_plot_cmds = [{
         'title': 'MEMCPY METHOD Bandwidth',
         'v-label': 'mem bandwidth MiB/s',

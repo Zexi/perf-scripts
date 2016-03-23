@@ -80,13 +80,14 @@ class ResultsHandler(tornado.web.RequestHandler):
                     common.extract_tar_gz(filepath, WORKSPACE)
                     os.remove(filepath)
             self.write('Upload %s successfully!\n' % filename)
-            if not os.path.exists(RRDB_PATH):
-                os.makedirs(RRDB_PATH, 02775)
             # rrdb_file will be unicode str, rrdtool not support it
-            rrdb_file = str(RRDB_PATH + '/' + testcase + "--" + testbox + '.rrd')
-            result_path = '%s/results/%s/%s/%s/%s/%s/%s' % (WORKSPACE, testcase, job_params, testbox, rootfs, commit, start_time)
+            testcase_prefix = '%s/%s/%s/%s/%s' % (testcase, job_params, testbox, rootfs, commit)
+            rrdb_file = str(RRDB_PATH + '/' + testcase_prefix + '/record.rrd')
+            if not os.path.exists(RRDB_PATH + '/' + testcase_prefix):
+                os.makedirs(RRDB_PATH + '/' + testcase_prefix, 02775)
+            result_path = '%s/results/%s/%s' % (WORKSPACE, testcase_prefix, start_time)
             result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path)
-            result.plot_rrdbs(str(testcase))
+            result.plot_rrdbs(testcase_prefix)
 
 if __name__ == "__main__":
     tornado.options.parse_command_line()
