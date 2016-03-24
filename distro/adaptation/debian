@@ -1,0 +1,6 @@
+epel-release:
+glibc.i686: lib32z1 lib32bz2-1.0
+libX11-devel: libx11-dev
+mesa-libGL-devel: libgl1-mesa-dev
+libXext-devel: libxext-dev
+perl-Time-HiRes: perl perl-modules

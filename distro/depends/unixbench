@@ -1,3 +1,4 @@
 libX11-devel
+libXext-devel
 mesa-libGL-devel
 perl-Time-HiRes

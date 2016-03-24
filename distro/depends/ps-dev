@@ -1,5 +1,3 @@
-gcc-c++
-libXext-devel
 make
 automake
 gcc
