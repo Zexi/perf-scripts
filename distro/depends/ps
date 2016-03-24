@@ -9,3 +9,5 @@ xz-utils
 epel-release
 python
 python-pip
+python-numpy
+python-matplotlib
