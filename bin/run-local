@@ -63,10 +63,13 @@ def create_result_root(result_root):
 job = job.Job()
 job.load(jobfile)
 
-HOSTNAME = os.environ['HOSTNAME'] 
+HOSTNAME = os.environ.get('HOSTNAME')
+if not HOSTNAME:
+    HOSTNAME = subprocess.check_output('hostname', shell=True).strip('\n')
+
 job['testbox'] = HOSTNAME
 job['commit'] = subprocess.check_output('uname -r', shell=True).strip('\n')
-job['rootfs'] = subprocess.check_output('source %s/lib/detect-system.sh; detect_system; echo $_system_name_lowercase' % SRC, shell=True).strip('\n')
+job['rootfs'] = subprocess.check_output('. %s/lib/detect-system.sh; detect_system; echo $_system_name_lowercase' % SRC, shell=True).strip('\n')
 job['start_time'] =  time.strftime(TIMEFORMAT, time.localtime())
 
 if opt_set_key_value:
