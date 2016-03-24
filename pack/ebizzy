@@ -1,8 +1,12 @@
 #!/bin/bash
 
-VERSION=0.3
-#WEB_URL="http://www.mirrorservice.org/sites/downloads.sourceforge.net/e/eb/$BM_NAME/$BM_NAME/${VERSION}/${BM_NAME}-${VERSION}.tar.gz"
-WEB_URL="ftp://ftp.gnome.org/mirror/temp/sf2015/e/eb/$BM_NAME/$BM_NAME/${VERSION}/${BM_NAME}-${VERSION}.tar.gz"
+download()
+{
+    [ -d '/tmp/ebizzy-0.3' ] && rm -rf /tmp/ebizzy-0.3
+    git_clone_update https://git.oschina.net/ZexiLi/ebizzy-0.3.git
+    source_dir="/tmp/ebizzy-0.3"
+}
+
 install()
 {
 	cp -af $BM_NAME $BM_ROOT
