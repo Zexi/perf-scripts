@@ -90,7 +90,7 @@ class ResultsHandler(tornado.web.RequestHandler):
             result_path = '%s/results/%s/%s' % (WORKSPACE, testcase_prefix, start_time)
             if testcase in DIFF_SUB_TEST:
                 result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path, job_params)
-                result.plot_rrdbs(testcase_prefix, job_params)
+                result.plot_rrdbs(testcase_prefix, accord_param=True)
             else:
                 result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path)
                 result.plot_rrdbs(testcase_prefix)

@@ -130,7 +130,7 @@ def find_same_testcase_rrdbs(testcase_name, job_params):
     same_testcase_rrdbs = subprocess.check_output("find %s -type f -regex '.*%s.*'" % (RRDB_PATH, find_re), shell=True).split()
     return same_testcase_rrdbs
 
-def plot_rrdbs(testcase_prefix, job_params=None):
+def plot_rrdbs(testcase_prefix, accord_param=False):
     testcase_info = testcase_prefix.split('/')
     testcase_name = testcase_info[0]
     job_params = testcase_info[1]
@@ -139,7 +139,7 @@ def plot_rrdbs(testcase_prefix, job_params=None):
     commit = testcase_info[4]
 
     same_testcase_rrdbs = find_same_testcase_rrdbs(testcase_name, job_params)
-    if job_params:
+    if accord_param:
         suffix = (testcase_name + '_' + job_params).replace('-', '_')
     else:
         suffix = testcase_name.replace('-', '_')
