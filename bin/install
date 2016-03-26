@@ -15,22 +15,12 @@ TMP="/tmp/perf-test"
 usage() {
     echo "Usage: $script_name [options] <script>/<jobfile>"
     echo "options: "
-    #echo "--hdd partition: HDD partition for IO tests"
-    #echo "--ssd partition: SSD partition for IO tests"
     echo "--dry-run: preview changes will made testbox by install"
 }
 
 while [ $# -gt 0 ]
 do
     case "$1" in
-#        --hdd)
-#            hdd_partitions=$2
-#            shift
-#            ;;
-#        --ssd)
-#            ssd_partitions=$2
-#            shift
-#            ;;
         --dry-run)
             DRY_RUN=0
             ;;
@@ -56,24 +46,6 @@ create_package_dir() {
     mkdir -p $TMP
     mkdir -p '/tmp/perf-test/paths'
     mkdir -p '/tmp/perf-test/benchmarks'
-}
-
-create_host_config() {
-    [ -n "$DRY_RUN" ] && return 
-    [ -d "$SRC/hosts" ] || mkdir $SRC/hosts
-
-    local host_config="$SRC/hosts/${HOSTNAME}"
-    [ -e $host_config ] || {
-        echo "Creating testbox configuration file: $host_config"
-
-        local mem_kb=$(grep MemTotal /proc/meminfo | awk '{print $2}')
-
-        cat > $host_config <<EOF
-memory: ${mem_kb}K
-hdd_partitions: ${hdd_partitions[*]}
-ssd_partitions: ${ssd_partitions[*]}
-EOF
-    }
 }
 
 parse_yaml() {
@@ -163,7 +135,6 @@ distro=$_system_name_lowercase
 
 make_wakeup
 create_package_dir
-create_host_config
 install_packages "ps" $distro
 install_pip_packages "python-packages" $distro
 

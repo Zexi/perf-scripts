@@ -17,6 +17,7 @@ sys.path.insert(0, LIB_PATH)
 
 import job
 import job2sh
+import common
 
 os.environ['SRC'] = SRC
 #PST_USER = os.environ['USER']
@@ -66,6 +67,8 @@ job.load(jobfile)
 HOSTNAME = os.environ.get('HOSTNAME')
 if not HOSTNAME:
     HOSTNAME = subprocess.check_output('hostname', shell=True).strip('\n')
+
+common.create_host_config(HOSTNAME)
 
 job['testbox'] = HOSTNAME
 job['commit'] = subprocess.check_output('uname -r', shell=True).strip('\n')
