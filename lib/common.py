@@ -10,6 +10,9 @@ import tarfile
 import tempfile
 import pytz
 from datetime import datetime
+import subprocess
+
+SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)) 
 
 def unify_time(tz):
     timezone = pytz.timezone(tz)
@@ -64,3 +67,42 @@ def load_json(file):
 
 def to_json(obj):
     return json.dumps(obj)
+
+def is_in_docker():
+    check_file = "/proc/self/cgroup"
+    in_docker = False
+    with open(check_file) as f:
+        for line in f:
+            if line.split('/')[1] == 'docker':
+                in_docker = True
+                break
+    return in_docker
+
+def get_cpu_info():
+    cmd = 'cat /proc/cpuinfo'
+    cpu_hash = {}
+    for line in [line.split(':') for line in subprocess.check_output(cmd, shell=True).strip().split("\n") if line]:
+        k, v = line
+        cpu_hash[k.replace('\t', '')] = v
+    return cpu_hash
+
+def get_mem_size():
+    if is_in_docker():
+        check_file = '/sys/fs/cgroup/memory/memory.limit_in_bytes'
+        kB = int(open(check_file, 'r').readline().strip()) / 1024
+    else:
+        cmd = "grep MemTotal /proc/meminfo | awk '{print $2}'"
+        kB = int(subprocess.check_output(cmd, shell=True).strip())
+    return kB
+
+def create_host_config(hostname):
+    conf_dir = SRC + '/hosts'
+    if not os.path.exists(conf_dir):
+        os.mkdir(conf_dir)
+    conf_file = conf_dir + '/' + hostname
+    cpu_freq = get_cpu_info()['cpu MHz']
+    mem_size = get_mem_size()
+
+    with open(conf_file, 'w') as f:
+        f.write('memory: %dK\n' % mem_size)
+        f.write('cpu_freq: %sMHz\n' % cpu_freq)
