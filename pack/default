@@ -1,6 +1,7 @@
 #!/bin/bash
 
 . $SRC/lib/git.sh
+WORKSPACE="$SRC/workspace"
 
 pre_download()
 {
@@ -96,15 +97,11 @@ pack_rpm()
 
 pack()
 {
-	{
-        echo /tmp
-		echo /tmp/perf-test/
-		echo /tmp/perf-test/benchmarks
-		echo /tmp/perf-test/benchmarks/$BM_NAME
-		find /tmp/perf-test/benchmarks/$BM_NAME/*
-	} |
-	cpio -o -H newc --owner=root.root | gzip -n -9 > /tmp/perf-test/benchmarks/${BM_NAME}.cgz
-	[[ $arch ]] && mv "/tmp/perf-test/benchmarks/${BM_NAME}.cgz" "/tmp/perf-test/benchmarks/${BM_NAME}-${arch}.cgz"
+    pushd $WORKSPACE
+    find ./benchmarks/$BM_NAME/* | \
+        cpio -o -H newc --owner=root.root | gzip -n -9 > $WORKSPACE/benchmarks/${BM_NAME}.cgz
+	[[ $arch ]] && mv "$WORKSPACE/benchmarks/${BM_NAME}.cgz" "$WORKSPACE/benchmarks/${BM_NAME}-${arch}.cgz"
+    popd
 }
 
 pack_pkg()

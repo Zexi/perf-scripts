@@ -10,7 +10,8 @@ script_name=$(basename $0)
 [ -n "$HOSTNAME" ] || HOSTNAME=$(hostname)
 [ -n "$SRC" ] || export SRC=$(dirname $(dirname $(readlink -e -v $0)))
 
-TMP="/tmp/perf-test"
+WORKSPACE="$SRC/workspace"
+TMP="$WORKSPACE/tmp"
 
 usage() {
     echo "Usage: $script_name [options] <script>/<jobfile>"
@@ -44,8 +45,8 @@ create_package_dir() {
     [ -n "$DRY_RUN" ] && return
 
     mkdir -p $TMP
-    mkdir -p '/tmp/perf-test/paths'
-    mkdir -p '/tmp/perf-test/benchmarks'
+    mkdir -p "$WORKSPACE/paths"
+    mkdir -p "$WORKSPACE/benchmarks"
 }
 
 parse_yaml() {
@@ -108,7 +109,7 @@ build_install_benchmarks() {
 
     $SRC/sbin/pack -d $distro -c $script
     if [ $? -eq 0 ]; then
-        echo "Just make /tmp/perf-test/benchmarks/$script-$(uname -m).cgz" 
+        echo "Just make $WORKSPACE/benchmarks/$script-$(uname -m).cgz"
 #        case $distro in
 #            debian|ubuntu)
 #                dpkg -i /tmp/$pkg_name.deb ;;

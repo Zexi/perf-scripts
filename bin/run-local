@@ -12,6 +12,7 @@ import time
 TIMEFORMAT='%Y-%m-%d-%X'
 
 SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
+WORKSPACE = SRC + '/workspace'
 LIB_PATH = SRC + '/lib'
 sys.path.insert(0, LIB_PATH)
 
@@ -21,10 +22,10 @@ import common
 
 os.environ['SRC'] = SRC
 #PST_USER = os.environ['USER']
-TMP = "/tmp/pst-tmp"
+TMP = "%s/tmp/pst-tmp" % WORKSPACE
 os.environ['TMP'] = TMP
 os.environ['PATH'] = os.environ['PATH'] + ":%s/bin" % SRC
-os.environ['BENCHMARK_ROOT'] = '/tmp/perf-test/benchmarks'
+os.environ['BENCHMARK_ROOT'] = '%s/benchmarks' % WORKSPACE
 
 opt_result_root = None
 opt_set_key_value = {}
