@@ -1,0 +1,11 @@
+[Unit]
+Description=perf-scripts/server/server.py
+After=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStart=/etc/init.d/pst-server
+IgnoreSIGPIPE=no
+
+[Install]
+WantedBy=multi-user.target
