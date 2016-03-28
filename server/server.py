@@ -2,6 +2,8 @@
 
 import os
 import sys
+import logging.config
+import yaml
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
@@ -13,6 +15,8 @@ define("port", default=8080, help="run on the given port", type=int)
 SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 WORKSPACE = SRC + '/workspace'
 RRDB_PATH = WORKSPACE + '/rrdb'
+LOG_PATH = WORKSPACE + '/logs'
+LOG_FILE = LOG_PATH + '/server.log'
 LIB_PATH = SRC + '/lib'
 sys.path.insert(0, LIB_PATH)
 import common
@@ -95,8 +99,20 @@ class ResultsHandler(tornado.web.RequestHandler):
                 result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path)
                 result.plot_rrdbs(testcase_prefix)
 
+def init_log():
+    if not os.path.exists(LOG_PATH):
+        os.makedirs(LOG_PATH, 02775)
+    if not os.path.exists(LOG_FILE):
+        os.system("touch %s" % LOG_FILE)
+
+    dict_conf = yaml.load(open(SRC + '/etc/server_log.yaml', 'r'))
+    dict_conf['handlers']['all']['filename'] = LOG_FILE
+    logging.config.dictConfig(dict_conf)
+    logging.info("Starting torando web server")
+
 if __name__ == "__main__":
     tornado.options.parse_command_line()
+    init_log()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
