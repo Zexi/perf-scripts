@@ -167,16 +167,38 @@ def plot(func):
         for index, cmd in enumerate(cmds):
             rrdtool.graph(str(pic_prefix+str(index)+'.png'),
                           '--imgformat', 'PNG',
+                          '-n', 'DEFAULT:12',
+                          '-n', 'AXIS:10',
+                          #'-n', 'UNIT:14',
+                          '--legend-direction', 'topdown',
                           '--width', '600',
                           '--height', '400',
                           '--title', str(cmd["title"]),
                           '--vertical-label', cmd["v-label"],
+                          'COMMENT:          ',
+                          'COMMENT:\\t\\t\\tCur\\t',
+                          'COMMENT:\\t\\tAvg\\t',
+                          'COMMENT:\\t\\tMax\\t',
+                          'COMMENT:\\t\\tMin\c',
                           cmd["DEF"],
-                          cmd["LINE"])
+                          cmd["LINE"],
+                          'COMMENT: \\n',
+                          'COMMENT: \\n',
+                          'COMMENT:          ',
+                          'COMMENT:LAST UPDATED\: %s ' % datetime.datetime.now().strftime("%Y-%m-%d %H\:%M"))
     return wrapper
 
 def gen_each_cmd(rrdb_files, title, v_label, defcmds, linecmds):
-    colors = [['FF0000', 'FF00FF'], ['006633', '660099']]
+    colors = [
+            ['3366CC', '33FF33'], ['CC0000', 'CC3399'],
+            ['006633', '660099'], ['000080', '87CEFF'],
+            ['46A3FF', '00AEAE'], ['02F78E', 'F75000'],
+            ['FF0000', 'FF00FF'], ['F0F000', 'F0F0FF'],
+            ['467500', 'A6A600'], ['408080', '984B4B'],
+            ['666666', '666699'], ['669966', '6699CC'],
+            ['996666', '996699'], ['999966', '9966CC'],
+            ]
+
     defs = []
     lines = []
     hn_with_rrdb = [(x.split('/rrdb/')[-1].split('/')[2], x) for x in rrdb_files]
@@ -187,7 +209,14 @@ def gen_each_cmd(rrdb_files, title, v_label, defcmds, linecmds):
         for cmd in defcmds:
             defs.append(cmd % (hnv, rrdb))
         for cmd in linecmds:
-            lines.append(cmd % (hnv, colors[i][j], hn))
+            line_cmd = cmd % (hnv, colors[i][j], hn)
+            vname = line_cmd.split(':')[1].split('#')[0]
+            lines.append(line_cmd)
+            # append GPRINT commands
+            lines.append('GPRINT:%s:LAST:\\t\\t%%.2lf' % vname)
+            lines.append('GPRINT:%s:AVERAGE:\\t\\t%%.2lf' % vname)
+            lines.append('GPRINT:%s:MAX:\\t\\t%%.2lf' % vname)
+            lines.append('GPRINT:%s:MIN:\\t\\t%%.2lf\\l' % vname)
             j += 1
         i += 1
     return {"title": title, "v-label": v_label, "DEF": defs, "LINE": lines}
@@ -229,7 +258,7 @@ def plot_unixbench(job_params):
         'title': 'UnixBench score',
         'v-label': 'score',
         'def': ["DEF:%s_score=%s:score:AVERAGE"],
-        'line': ["LINE1:%s_score#%s:%s score"]
+        'line': ["LINE1:%s_score#%s:%s"]
         }]
     return will_plot_cmds
 
@@ -239,7 +268,7 @@ def plot_superpi(job_params):
         'title': 'SuperPi compute %s digits time' % job_params,
         'v-label': 'time /s',
         'def': ["DEF:%s_time=%s:time:AVERAGE"],
-        'line': ["LINE1:%s_time#%s:%s elapsed time"]}]
+        'line': ["LINE3:%s_time#%s: %s"]}]
 
     return will_plot_cmds
 
@@ -247,9 +276,9 @@ def plot_superpi(job_params):
 def plot_ping(job_params):
     will_plot_cmds = [{
         'title': 'ping www.baidu.com time',
-        'v-label': 'time /s',
+        'v-label': 'time /ms',
         'def': ["DEF:%s_time=%s:time:AVERAGE"],
-        'line': ["LINE1:%s_time#%s:%s elapsed time"]}]
+        'line': ["LINE1:%s_time#%s: %s"]}]
 
     return will_plot_cmds
 
@@ -259,17 +288,17 @@ def plot_mbw(job_params):
         'title': 'MEMCPY METHOD Bandwidth',
         'v-label': 'mem bandwidth MiB/s',
         'def': ["DEF:%s_memcpy=%s:memcpy:AVERAGE"],
-        'line': ["LINE1:%s_memcpy#%s:%s memcpy method bandwidth"]},
+        'line': ["LINE1:%s_memcpy#%s:%s"]},
 
         {'title': 'DUMB METHOD Bandwidth',
         'v-label': 'mem bandwidth MiB/s',
         'def': ["DEF:%s_dumb=%s:dumb:AVERAGE"],
-        'line': ["LINE1:%s_dumb#%s:%s dumb method bandwidth"]},
+        'line': ["LINE1:%s_dumb#%s:%s"]},
 
         {'title': 'MCBLOCK METHOD Bandwidth',
         'v-label': 'mem bandwidth MiB/s',
         'def': ["DEF:%s_mcblock=%s:mcblock:AVERAGE"],
-        'line': ["LINE1:%s_mcblock#%s:%s mcblock method bandwidth"]}]
+        'line': ["LINE1:%s_mcblock#%s:%s"]}]
 
     return will_plot_cmds
 
@@ -279,7 +308,7 @@ def plot_sysbench_cpu(job_params):
         'title': 'Sysbench maximum prime number checked in CPU test: 20000',
         'v-label': 'time /s',
         'def': ["DEF:%s_cpu_time=%s:cpu_time:AVERAGE"],
-        'line': ["LINE1:%s_cpu_time#%s:%s elapsed time"]}]
+        'line': ["LINE1:%s_cpu_time#%s:%s"]}]
 
     return will_plot_cmds
 
@@ -289,12 +318,12 @@ def plot_sysbench_oltp(job_params):
         'title': 'Sysbench %s about mysql TPS' % job_params,
         'v-label': 'time /s',
         'def': ["DEF:%s_tps=%s:tps:AVERAGE"],
-        'line': ["LINE1:%s_tps#%s:%s TPS per sec"]},
+        'line': ["LINE1:%s_tps#%s:%s"]},
 
         {'title': 'Sysbench %s about mysql QPS' % job_params,
         'v-label': 'time /s',
         'def': ["DEF:%s_qps=%s:qps:AVERAGE"],
-        'line': ["LINE1:%s_qps#%s:%s QPS per sec"]}]
+        'line': ["LINE1:%s_qps#%s:%s"]}]
 
     return will_plot_cmds
 
