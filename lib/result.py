@@ -171,21 +171,16 @@ def plot(func):
                           '-n', 'AXIS:10',
                           #'-n', 'UNIT:14',
                           '--legend-direction', 'topdown',
-                          '--width', '600',
+                          '--width', '1000',
                           '--height', '400',
                           '--title', str(cmd["title"]),
                           '--vertical-label', cmd["v-label"],
-                          'COMMENT:          ',
-                          'COMMENT:\\t\\t\\tCur\\t',
-                          'COMMENT:\\t\\tAvg\\t',
-                          'COMMENT:\\t\\tMax\\t',
-                          'COMMENT:\\t\\tMin\c',
                           cmd["DEF"],
                           cmd["LINE"],
                           'COMMENT: \\n',
                           'COMMENT: \\n',
                           'COMMENT:          ',
-                          'COMMENT:LAST UPDATED\: %s ' % datetime.datetime.now().strftime("%Y-%m-%d %H\:%M"))
+                          'COMMENT:Last updated\: %s ' % datetime.datetime.now().strftime("%Y-%m-%d %H\:%M"))
     return wrapper
 
 def gen_each_cmd(rrdb_files, title, v_label, defcmds, linecmds):
@@ -213,10 +208,10 @@ def gen_each_cmd(rrdb_files, title, v_label, defcmds, linecmds):
             vname = line_cmd.split(':')[1].split('#')[0]
             lines.append(line_cmd)
             # append GPRINT commands
-            lines.append('GPRINT:%s:LAST:\\t\\t%%.2lf' % vname)
-            lines.append('GPRINT:%s:AVERAGE:\\t\\t%%.2lf' % vname)
-            lines.append('GPRINT:%s:MAX:\\t\\t%%.2lf' % vname)
-            lines.append('GPRINT:%s:MIN:\\t\\t%%.2lf\\l' % vname)
+            lines.append('GPRINT:%s:LAST:\\tLast\: %%.2lf%%s' % vname)
+            lines.append('GPRINT:%s:AVERAGE:\\tAvg\: %%.2lf%%s' % vname)
+            lines.append('GPRINT:%s:MAX:\\tMax\: %%.2lf%%s' % vname)
+            lines.append('GPRINT:%s:MIN:\\tMin\: %%.2lf%%s\\l' % vname)
             j += 1
         i += 1
     return {"title": title, "v-label": v_label, "DEF": defs, "LINE": lines}
