@@ -13,6 +13,7 @@ PIC_PATH = SRC + '/server/static/images'
 LIB_PATH = SRC + '/lib'
 sys.path.insert(0, LIB_PATH)
 import common
+import mongodb
 
 RRD_CREATE_OPTION = {"fio-vm": ['--step', '300', 'DS:srthr:GAUGE:600:U:U', 'DS:sriops:GAUGE:600:U:U',
                      'DS:rrthr:GAUGE:600:U:U', 'DS:rriops:GAUGE:600:U:U',
@@ -120,17 +121,10 @@ def update_sysbench_oltp_rrdb(rrdb_file, start_time, result_path):
     rrdupdate_cmd = "%d:%f:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), tps, qps)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
-def find_same_testcase_rrdbs(testcase_name, job_params):
-    '''
-    This function only find rrdb according testcase and params,
-    should support multi dimension find by testcase, params,
-    testbox, rootfs and commit.
-    '''
-    find_re = "%s/%s" % (testcase_name, job_params)
-    same_testcase_rrdbs = subprocess.check_output("find %s -type f -regex '.*%s.*'" % (RRDB_PATH, find_re), shell=True).split()
-    return same_testcase_rrdbs
+def find_same_testcase_rrdbs(db_coll, doc):
+    return [str(rec['rrdb_file']) for rec in mongodb.coll_find(db_coll, doc)]
 
-def plot_rrdbs(testcase_prefix, accord_param=False):
+def plot_rrdbs(db_coll, testcase_prefix, accord_param=False):
     testcase_info = testcase_prefix.split('/')
     testcase_name = testcase_info[0]
     job_params = testcase_info[1]
@@ -138,7 +132,11 @@ def plot_rrdbs(testcase_prefix, accord_param=False):
     rootfs = testcase_info[3]
     commit = testcase_info[4]
 
-    same_testcase_rrdbs = find_same_testcase_rrdbs(testcase_name, job_params)
+    # as for now, use testcase and job_params to select rrdb
+    # TODO: support multi keys combination search
+    search_doc = {'testcase': testcase_name, 'job_params': job_params}
+
+    same_testcase_rrdbs = find_same_testcase_rrdbs(db_coll, search_doc)
     if accord_param:
         suffix = (testcase_name + '_' + job_params).replace('-', '_')
     else:

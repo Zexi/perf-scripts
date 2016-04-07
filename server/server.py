@@ -20,6 +20,7 @@ LOG_FILE = LOG_PATH + '/server.log'
 LIB_PATH = SRC + '/lib'
 sys.path.insert(0, LIB_PATH)
 import common
+import mongodb
 import result
 
 DIFF_SUB_TEST = ['sysbench']
@@ -37,7 +38,8 @@ class Application(tornado.web.Application):
                 ui_modules={'Item': ItemModule, 'PicContent': PicContentModule, 'Pic': PicModule },
                 debug=True
                 )
-
+        conn = mongodb.client('localhost', 27017)
+        self.db = conn["pst"]
         tornado.web.Application.__init__(self, handlers, **settings)
 
 class ItemModule(tornado.web.UIModule):
@@ -59,7 +61,7 @@ class IndexHandler(tornado.web.RequestHandler):
 class ResultsHandler(tornado.web.RequestHandler):
     def get(self, testcase_name=None):
         if testcase_name:
-            result.plot_rrdbs(testcase_name)
+            pass
         else:
             pass
 
@@ -71,6 +73,8 @@ class ResultsHandler(tornado.web.RequestHandler):
         start_time = self.get_argument("start_time")
         testcase = self.get_argument("testcase")
         job_params = self.get_argument("job_params")
+
+        db_coll = self.application.db.results
 
         upload_path = WORKSPACE + '/tmp'
         if not os.path.exists(upload_path):
@@ -89,15 +93,26 @@ class ResultsHandler(tornado.web.RequestHandler):
             # rrdb_file will be unicode str, rrdtool not support it
             testcase_prefix = '%s/%s/%s/%s/%s' % (testcase, job_params, testbox, rootfs, commit)
             rrdb_file = str(RRDB_PATH + '/' + testcase_prefix + '/record.rrd')
+
+            # record testcase info to mongodb
+            mongodb.coll_insert(db_coll, {
+                'testcase': testcase,
+                'job_params': job_params,
+                'testbox': testbox,
+                'rootfs': rootfs,
+                'commit': commit,
+                'rrdb_file': rrdb_file,
+                })
+
             if not os.path.exists(RRDB_PATH + '/' + testcase_prefix):
                 os.makedirs(RRDB_PATH + '/' + testcase_prefix, 02775)
             result_path = '%s/results/%s/%s' % (WORKSPACE, testcase_prefix, start_time)
             if testcase in DIFF_SUB_TEST:
                 result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path, job_params)
-                result.plot_rrdbs(testcase_prefix, accord_param=True)
+                result.plot_rrdbs(db_coll, testcase_prefix, accord_param=True)
             else:
                 result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path)
-                result.plot_rrdbs(testcase_prefix)
+                result.plot_rrdbs(db_coll, testcase_prefix)
 
 def init_log():
     if not os.path.exists(LOG_PATH):
