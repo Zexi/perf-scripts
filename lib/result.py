@@ -204,7 +204,7 @@ def gen_each_cmd(rrdb_files, title, v_label, defcmds, linecmds):
         for cmd in defcmds:
             defs.append(cmd % (hnv, rrdb))
         for cmd in linecmds:
-            line_cmd = cmd % (hnv, colors[i][j], hn)
+            line_cmd = cmd % (hnv, colors[i][j], hn[0:10])
             vname = line_cmd.split(':')[1].split('#')[0]
             lines.append(line_cmd)
             # append GPRINT commands
