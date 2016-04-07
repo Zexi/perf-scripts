@@ -78,6 +78,12 @@ def is_in_docker():
                 break
     return in_docker
 
+def get_hostname():
+    hostname = os.environ.get('HOSTNAME')
+    if not hostname:
+        hostname = subprocess.check_output('hostname', shell=True).strip('\n')
+    return hostname
+
 def get_cpu_info():
     cmd = 'cat /proc/cpuinfo'
     cpu_hash = {}

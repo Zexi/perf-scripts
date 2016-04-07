@@ -32,7 +32,9 @@ elif not os.path.isdir(output_path):
     sys.exit(1)
 
 if not args.testbox:
-    opt_testbox = os.getenv("HOSTNAME")
+    HOSTNAME = common.get_hostname()
+    common.create_host_config(HOSTNAME)
+    opt_testbox = HOSTNAME
 atom_jobs = []
 
 def test_func(job):
