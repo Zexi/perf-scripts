@@ -8,7 +8,7 @@ import yaml
 import subprocess
 
 SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
-CYCLIC_PATH = SRC + '/workspace/cyclic-jobs/' 
+CYCLIC_PATH = SRC + '/workspace/cyclic-jobs'
 LIB_PATH = SRC + '/lib'
 sys.path.insert(0, LIB_PATH)
 import job
@@ -29,40 +29,35 @@ def load_conf(conf_file):
         conf_dict = yaml.load(f)
         return conf_dict
 
-def run_each_job(conf_dict):
+def run_each_job(conf_dict, uploadurl):
     if not os.path.exists(CYCLIC_PATH):
         os.makedirs(CYCLIC_PATH, 02775)
 
-    def split_run_job(job):
-        job_params = job.path_params()
-        unit_jobfile = prefix + '-' + job_params
-        # there is a ['xxx', 'yyy'] bug in unit_jobfile, still not find it
-        # maybe first jump it
-        if '[' in unit_jobfile:
-            return
-        if 'commit' in job:
-            unit_jobfile += '-' + job['commit']
-        job['job_params'] = job_params
-        job['unit_job'] = unit_jobfile.split('/')[-1]
-        unit_jobfile += '.yaml'
-        job.save(unit_jobfile)
-        print "write to: %s" % unit_jobfile
-        cmd = "%s run -j %s -u %s" % (SRC + '/bin/pst', unit_jobfile, uploadurl)
-        subprocess.call(cmd, shell=True)
-
+    # split each cyclic jobs
     cyclic_jobs_path = get_cyclic_jobs(conf_dict)
-    uploadurl = get_upload_url(conf_dict)
-    for job_file_path in cyclic_jobs_path:
-        job_obj = job.Job()
-        job_obj.load_head("%s/hosts/%s" % (SRC, os.getenv("HOSTNAME")))
-        job_obj.load(job_file_path)
-        job_obj['enque_time'] = common.get_time()
-        prefix = CYCLIC_PATH + os.path.splitext(os.path.basename(job_file_path))[0]
-        job_obj.each_jobs(split_run_job)
+    split_job_params = ' '.join(cyclic_jobs_path)
+    split_cmd = "%s split -j %s -o %s" % (SRC+'/bin/pst', split_job_params, CYCLIC_PATH)
+    split_output = subprocess.check_output(split_cmd, shell=True)
+    split_jobs_path = [split_file.split(' => ')[1] for split_file in split_output.split('\n') if split_file]
+
+    # run each splited jobs
+    for unit_jobfile in split_jobs_path:
+        run_cmd = "%s run -j %s -u %s" % (SRC + '/bin/pst', unit_jobfile, uploadurl)
+        try:
+            print("Run command: %s" % run_cmd)
+            run_cmd_output = subprocess.check_output(run_cmd, stderr=subprocess.STDOUT, shell=True)
+        except subprocess.CalledProcessError as exc:
+            print("Status: FAIL", exc.returncode, exc.output)
+        else:
+            print("Output: \n{}\n".format(run_cmd_output))
+        finally:
+            print("Remove: %s" % unit_jobfile)
+            os.remove(unit_jobfile)
 
 common.unify_localtime()
 conf_dict = load_conf(SRC + '/etc/autorun_conf.yaml')
-schedule.every(conf_dict["runtime"]).seconds.do(run_each_job, conf_dict)
+uploadurl = get_upload_url(conf_dict)
+schedule.every(conf_dict["runtime"]).seconds.do(run_each_job, conf_dict, uploadurl)
 
 while True:
     schedule.run_pending()
