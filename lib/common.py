@@ -79,12 +79,13 @@ def is_in_docker():
     return in_docker
 
 def is_in_vm():
-    check_cmd = "grep -w hypervisor /proc/cpuinfo"
-    output = subprocess.check_output(check_cmd, shell=True)
-    if output:
-        return True
-    else:
+    check_cmd = "grep -q -w hypervisor /proc/cpuinfo"
+    try:
+        subprocess.check_call(check_cmd, shell=True)
+    except subprocess.CalledProcessError:
         return False
+    else:
+        return True
 
 def get_hostname():
     hostname = os.environ.get('HOSTNAME')
