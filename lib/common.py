@@ -78,6 +78,14 @@ def is_in_docker():
                 break
     return in_docker
 
+def is_in_vm():
+    check_cmd = "grep -w hypervisor /proc/cpuinfo"
+    output = subprocess.check_output(check_cmd, shell=True)
+    if output:
+        return True
+    else:
+        return False
+
 def get_hostname():
     hostname = os.environ.get('HOSTNAME')
     if not hostname:
@@ -106,9 +114,25 @@ def create_host_config(hostname):
     if not os.path.exists(conf_dir):
         os.mkdir(conf_dir)
     conf_file = conf_dir + '/' + hostname
-    cpu_freq = get_cpu_info()['cpu MHz']
+
+    host_dict = {}
+    if os.path.exists(conf_file):
+        with open(conf_file, 'r') as f:
+            host_dict.update(yaml.load(f))
+
+    # judge testbox host type
+    if is_in_vm():
+        host_dict['type'] = 'vm'
+    elif is_in_docker():
+        host_dict['type'] = 'docker'
+    else:
+        host_dict['type'] = 'pm'
+
+    cpu_info = get_cpu_info()
     mem_size = get_mem_size()
+    host_dict['memory'] = '%dK' % mem_size
+    host_dict['cpu_model_name'] = cpu_info['model name']
+    host_dict['cpu_freq'] = cpu_info['cpu MHz']
 
     with open(conf_file, 'w') as f:
-        f.write('memory: %dK\n' % mem_size)
-        f.write('cpu_freq: %sMHz\n' % cpu_freq)
+        f.write(yaml.dump(host_dict, default_flow_style=False))
