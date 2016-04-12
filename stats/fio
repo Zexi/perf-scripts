@@ -14,17 +14,17 @@ print 'time: ' + fio_time
 for job in fio_jobs:
     if job['jobname'] == 'seq-read':
         res_val = job['read']
-        print 'seq_read.throughput: ' + str(res_val['bw'])
-        print 'seq_read.iops: ' + str(res_val['iops'])
+        print 'seq_read.throughput: ' + str(float(res_val['bw']))
+        print 'seq_read.iops: ' + str(float(res_val['iops']))
     if job['jobname'] == 'rand-read':
         res_val = job['read']
-        print 'rand_read.throughput: ' + str(res_val['bw'])
-        print 'rand_read.iops: ' + str(res_val['iops'])
+        print 'rand_read.throughput: ' + str(float(res_val['bw']))
+        print 'rand_read.iops: ' + str(float(res_val['iops']))
     if job['jobname'] == 'seq-write':
         res_val = job['write']
-        print 'seq_write.throughput: ' + str(res_val['bw'])
-        print 'seq_write.iops: ' + str(res_val['iops'])
+        print 'seq_write.throughput: ' + str(float(res_val['bw']))
+        print 'seq_write.iops: ' + str(float(res_val['iops']))
     if job['jobname'] == 'rand-write':
         res_val = job['write']
-        print 'rand_write.throughput: ' + str(res_val['bw'])
-        print 'rand_write.iops: ' + str(res_val['iops'])
+        print 'rand_write.throughput: ' + str(float(res_val['bw']))
+        print 'rand_write.iops: ' + str(float(res_val['iops']))
