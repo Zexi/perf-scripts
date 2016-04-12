@@ -2,14 +2,20 @@
 
 import sys
 import re
+import subprocess
+from distutils.version import StrictVersion
 # use fio --output-format=json, just parse the json stream
 import json
 
 result = json.load(sys.stdin)
 
 fio_jobs = result.get("jobs")
-fio_time = result.get("time")
-print 'time: ' + fio_time
+
+# judge fio version, version under 2.2.8 not include time
+version = subprocess.check_output('fio -v', shell=True).split('-')[1].strip()
+if StrictVersion(version) >= StrictVersion('2.2.8'):
+    fio_time = result.get("time")
+    print 'time: ' + fio_time
 
 for job in fio_jobs:
     if job['jobname'] == 'seq-read':
