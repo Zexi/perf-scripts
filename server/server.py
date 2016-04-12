@@ -9,9 +9,7 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import tornado.options
-
 from tornado.options import define, options
-define("port", default=8081, help="run on the given port", type=int)
 
 SRC = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 WORKSPACE = SRC + '/workspace'
@@ -24,6 +22,16 @@ import common
 import mongodb
 import result
 import influxdb_pst
+
+# load server config
+conf_dict = common.load_conf(SRC + '/etc/pst_server.yaml')
+server_port = str(conf_dict['pst_server']['port'])
+os.environ['INFLUXDB_HOST'] = str(conf_dict['influxdb']['ip'])
+os.environ['INFLUXDB_PORT'] = str(conf_dict['influxdb']['port'])
+os.environ['INFLUXDB_USER'] = str(conf_dict['influxdb']['user'])
+os.environ['INFLUXDB_PASS'] = str(conf_dict['influxdb']['pass'])
+
+define("port", default=server_port, help="run on the given port", type=int)
 
 DIFF_SUB_TEST = ['sysbench']
 

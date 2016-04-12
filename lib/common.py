@@ -141,3 +141,8 @@ def create_host_config(hostname):
 def remove_res_point_arr(res):
     for k, v in res.iteritems():
         res[k] = v[0]
+
+def load_conf(conf_file):
+    with open(conf_file) as f:
+        conf_dict = yaml.load(f)
+        return conf_dict
