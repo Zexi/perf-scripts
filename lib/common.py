@@ -137,3 +137,7 @@ def create_host_config(hostname):
 
     with open(conf_file, 'w') as f:
         f.write(yaml.dump(host_dict, default_flow_style=False))
+
+def remove_res_point_arr(res):
+    for k, v in res.iteritems():
+        res[k] = v[0]

@@ -14,6 +14,7 @@ LIB_PATH = SRC + '/lib'
 sys.path.insert(0, LIB_PATH)
 import common
 import mongodb
+import influxdb_pst
 
 RRD_CREATE_OPTION = {"fio-vm": ['--step', '300', 'DS:srthr:GAUGE:600:U:U', 'DS:sriops:GAUGE:600:U:U',
                      'DS:rrthr:GAUGE:600:U:U', 'DS:rriops:GAUGE:600:U:U',
@@ -44,7 +45,7 @@ RRD_CREATE_OPTION = {"fio-vm": ['--step', '300', 'DS:srthr:GAUGE:600:U:U', 'DS:s
                      'DS:qps:GAUGE:600:U:U', 'RRA:AVERAGE:0.5:1:600']
                      }
 
-def update_rrdbs(testcase_name, rrdb_file, start_time, result_path, job_params=None):
+def update_rrdbs(testcase_name, rrdb_file, start_time, result_path, influxdb_client, influxdb_tags, job_params=None):
     create_testcase_rrdb(testcase_name, rrdb_file, start_time, job_params)
     if job_params:
         suffix = (testcase_name + '_' + job_params).replace('-', '_')
@@ -54,7 +55,7 @@ def update_rrdbs(testcase_name, rrdb_file, start_time, result_path, job_params=N
     # call each testcase name function
     func = globals().get(function_name)
     if func:
-        func(rrdb_file, start_time, result_path)
+        func(rrdb_file, start_time, result_path, influxdb_client, influxdb_tags)
     else:
         pass
 
@@ -66,60 +67,80 @@ def create_testcase_rrdb(testcase_name, rrdb_file, start_time, job_params=None):
     if not os.path.exists(rrdb_file):
         rrdb = rrdtool.create(rrdb_file, '--start', '%d' % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()) - 300), RRD_CREATE_OPTION[rrd_create_index])
 
-def update_fio_vm_rrdb(rrdb_file, start_time, result_path):
-    fio_res = common.load_json(result_path.replace('"', '') + '/fio.json')
-    seq_read_throughput = fio_res['fio.seq_read.throughput'][0]
-    seq_read_iops = fio_res['fio.seq_read.iops'][0]
-    rand_read_throughput = fio_res['fio.rand_read.throughput'][0]
-    rand_read_iops = fio_res['fio.rand_read.iops'][0]
-    seq_write_throughput = fio_res['fio.seq_write.throughput'][0]
-    seq_write_iops = fio_res['fio.seq_write.iops'][0]
-    rand_write_throughput = fio_res['fio.rand_write.throughput'][0]
-    rand_write_iops = fio_res['fio.rand_write.iops'][0]
-    rrdupdate_cmd = "%d:%f:%f:%f:%f:%f:%f:%f:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), seq_read_throughput, seq_read_iops, rand_read_throughput, rand_read_iops, seq_write_throughput, seq_write_iops, rand_write_throughput, rand_write_iops)
+def return_res_time(result_path, result_json_file, start_time):
+    res = common.load_json(result_path.replace('"', '') + '/' + result_json_file)
+    common.remove_res_point_arr(res)
+    start_time = time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple())
+    return (res, start_time)
+
+def update_fio_vm_rrdb(rrdb_file, start_time, result_path, influxdb_client, influxdb_tags):
+    #import ipdb; ipdb.set_trace()
+    fio_res, start_time = return_res_time(result_path, 'fio.json', start_time)
+    seq_read_throughput = fio_res['fio.seq_read.throughput']
+    seq_read_iops = fio_res['fio.seq_read.iops']
+    rand_read_throughput = fio_res['fio.rand_read.throughput']
+    rand_read_iops = fio_res['fio.rand_read.iops']
+    seq_write_throughput = fio_res['fio.seq_write.throughput']
+    seq_write_iops = fio_res['fio.seq_write.iops']
+    rand_write_throughput = fio_res['fio.rand_write.throughput']
+    rand_write_iops = fio_res['fio.rand_write.iops']
+    rrdupdate_cmd = "%d:%f:%f:%f:%f:%f:%f:%f:%f" % (start_time, seq_read_throughput, seq_read_iops, rand_read_throughput, rand_read_iops, seq_write_throughput, seq_write_iops, rand_write_throughput, rand_write_iops)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
-def update_unixbench_rrdb(rrdb_file, start_time, result_path):
+    influxdb_pst.insert_rrdb_point(influxdb_client, "fio", influxdb_tags, start_time, fio_res)
+
+def update_unixbench_rrdb(rrdb_file, start_time, result_path, influxdb_client, influxdb_tags):
     unixbench_res = common.load_json(result_path.replace('"', '') + '/unixbench.json')
     score = unixbench_res['unixbench.score'][0]
     rrdupdate_cmd = "%d:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), score)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
-def update_superpi_rrdb(rrdb_file, start_time, result_path):
-    res = common.load_json(result_path.replace('"', '') + '/superpi.json')
-    pitime = res['superpi.Time'][0]
-    rrdupdate_cmd = "%d:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), pitime)
+def update_superpi_rrdb(rrdb_file, start_time, result_path, influxdb_client, influxdb_tags):
+    res, start_time = return_res_time(result_path, 'superpi.json', start_time)
+    pitime = res['superpi.Time']
+    rrdupdate_cmd = "%d:%f" % (start_time, pitime)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
-def update_ping_rrdb(rrdb_file, start_time, result_path):
-    res = common.load_json(result_path.replace('"', '') + '/ping.json')
-    pingtime = res['ping.avg_time'][0]
-    rrdupdate_cmd = "%d:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), pingtime)
+    influxdb_pst.insert_rrdb_point(influxdb_client, "superpi", influxdb_tags, start_time, res)
+
+def update_ping_rrdb(rrdb_file, start_time, result_path, influxdb_client, influxdb_tags):
+    res, start_time = return_res_time(result_path, 'ping.json', start_time)
+    pingtime = res['ping.avg_time']
+    rrdupdate_cmd = "%d:%f" % (start_time, pingtime)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
-def update_mbw_rrdb(rrdb_file, start_time, result_path):
-    res = common.load_json(result_path.replace('"', '') + '/mbw.json')
-    memcpy_bw = res['mbw.memcpy_avg'][0]
-    dump_bw = res['mbw.dump_avg'][0]
-    mcblock_bw = res['mbw.mcblock_avg'][0]
+    influxdb_pst.insert_rrdb_point(influxdb_client, "ping", influxdb_tags, start_time, res)
 
-    rrdupdate_cmd = "%d:%f:%f:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), memcpy_bw, dump_bw, mcblock_bw)
+def update_mbw_rrdb(rrdb_file, start_time, result_path, influxdb_client, influxdb_tags):
+    res, start_time = return_res_time(result_path, 'mbw.json', start_time)
+    memcpy_bw = res['mbw.memcpy_avg']
+    dump_bw = res['mbw.dump_avg']
+    mcblock_bw = res['mbw.mcblock_avg']
+
+    rrdupdate_cmd = "%d:%f:%f:%f" % (start_time, memcpy_bw, dump_bw, mcblock_bw)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
-def update_sysbench_cpu_rrdb(rrdb_file, start_time, result_path):
-    res = common.load_json(result_path.replace('"', '') + '/sysbench.json')
-    cpu_time = res['sysbench.cpu_time'][0]
+    influxdb_pst.insert_rrdb_point(influxdb_client, "mbw", influxdb_tags, start_time, res)
 
-    rrdupdate_cmd = "%d:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), cpu_time)
+def update_sysbench_cpu_rrdb(rrdb_file, start_time, result_path, influxdb_client, influxdb_tags):
+    res, start_time = return_res_time(result_path, 'sysbench.json', start_time)
+    cpu_time = res['sysbench.cpu_time']
+
+    rrdupdate_cmd = "%d:%f" % (start_time, cpu_time)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
 
-def update_sysbench_oltp_rrdb(rrdb_file, start_time, result_path):
-    res = common.load_json(result_path.replace('"', '') + '/sysbench.json')
-    tps = res['sysbench.TPS'][0]
-    qps = res['sysbench.QPS'][0]
+    influxdb_pst.insert_rrdb_point(influxdb_client, "sysbench", influxdb_tags, start_time, res)
 
-    rrdupdate_cmd = "%d:%f:%f" % (time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d-%H:%M:%S").timetuple()), tps, qps)
+def update_sysbench_oltp_rrdb(rrdb_file, start_time, result_path, influxdb_client, influxdb_tags):
+    res, start_time = return_res_time(result_path, 'sysbench.json', start_time)
+
+    tps = res['sysbench.TPS']
+    qps = res['sysbench.QPS']
+
+    rrdupdate_cmd = "%d:%f:%f" % (start_time, tps, qps)
     rrdtool.update(rrdb_file, rrdupdate_cmd)
+
+    influxdb_pst.insert_rrdb_point(influxdb_client, "sysbench", influxdb_tags, start_time, res)
 
 def find_same_testcase_rrdbs(db_coll, doc):
     return [str(rec['rrdb_file']) for rec in mongodb.coll_find(db_coll, doc)]
@@ -327,6 +348,3 @@ def get_testcase_pic(path=PIC_PATH):
         testcase_pics[testcase] = [x.split('static/')[-1] for x in subprocess.check_output("find %s -regex '.*png$'" % (path + '/' + testcase), shell=True).split()]
 
     return testcase_pics
-
-if __name__ == "__main__":
-    print get_testcase_pic()
