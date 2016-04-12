@@ -1,0 +1,12 @@
+[Unit]
+Description=pst influxdb container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/docker start -a pst_influxdb
+ExecStop=/usr/bin/docker stop -t 2 pst_influxdb
+
+[Install]
+WantedBy=local.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=pst grafana container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/docker start -a pst_grafana
+ExecStop=/usr/bin/docker stop -t 2 pst_grafana
+
+[Install]
+WantedBy=local.target
