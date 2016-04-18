@@ -17,10 +17,6 @@ ADD config.toml /config/config.toml
 ADD run.sh /run.sh
 RUN chmod +x /*.sh
 
-ENV PRE_CREATE_DB **None**
-ENV SSL_SUPPORT **False**
-ENV SSL_CERT **None**
-
 # Admin server WebUI
 EXPOSE 8083
 
