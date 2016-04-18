@@ -2,7 +2,7 @@ FROM tutum/curl:trusty
 MAINTAINER Zexi Li <zexi.li@aliyun.com>
 
 ARG GRAFANA_VERSION
-ENV GRAFANA_VERSION ${GRAFANA_VERSION:-2.6.0}
+ENV GRAFANA_VERSION ${GRAFANA_VERSION:-3.0.0-beta51460725904}
 
 RUN apt-get update && \
     apt-get -y --no-install-recommends install libfontconfig ca-certificates && \
