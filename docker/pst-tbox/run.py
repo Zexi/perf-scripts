@@ -11,7 +11,7 @@ import common
 
 conf_file = SRC + '/etc/autorun_conf.yaml'
 conf_dict = common.load_conf(conf_file)
-conf_dict['runtime'] = os.getenv('RUNTIME', 300)
+conf_dict['runtime'] = int(os.getenv('RUNTIME', 300))
 conf_dict['server']['hostname'] = os.getenv('SERVER_IP', '127.0.0.1')
 conf_dict['server']['port'] = os.getenv('SERVER_PORT', 8080)
 conf_dict['server']['res'] = os.getenv('SERVER_RES', 'results')
