@@ -1,6 +1,9 @@
 FROM tutum/curl:trusty
 MAINTAINER Zexi Li <zexi.li@aliyun.com>
 
+ARG INFLUXDB_VERSION
+ENV INFLUXDB_VERSION ${INFLUXDB_VERSION:-0.9.6.1}
+
 # Install InfluxDB
 RUN curl -s -o /tmp/influxdb_latest_amd64.deb https://s3.amazonaws.com/influxdb/influxdb_${INFLUXDB_VERSION}_amd64.deb && \
     dpkg -i /tmp/influxdb_latest_amd64.deb && \
