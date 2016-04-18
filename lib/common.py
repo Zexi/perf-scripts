@@ -146,3 +146,7 @@ def load_conf(conf_file):
     with open(conf_file) as f:
         conf_dict = yaml.load(f)
         return conf_dict
+
+def save_yaml(conf_file, conf_dict):
+    with open(conf_file, 'w') as f:
+        f.write(yaml.dump(conf_dict, default_flow_style=False))
