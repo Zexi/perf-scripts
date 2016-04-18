@@ -24,3 +24,5 @@ print "--------------------------------"
 print "Jobs been run: %s" % jobs
 print "--------------------------------"
 common.save_yaml(conf_file, conf_dict)
+subprocess.call("/perf-scripts/bin/auto-install.py", shell=True)
+subprocess.call("/perf-scripts/bin/auto-run.py", shell=True)

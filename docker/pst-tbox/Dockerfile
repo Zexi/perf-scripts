@@ -15,11 +15,7 @@ RUN pip install pytz
 RUN git clone -b dev https://github.com/Zexi/perf-scripts/
 
 # Install and run benchmarks
-ARG TBOX_JOBS
 ENV TBOX_JOBS ${TBOX_JOBS:-superpi;ping}
-ADD ./init.py /init.py
-RUN /init.py && \
-    /perf-scripts/bin/auto-install.py && \
-    rm -rf /var/lib/apt/lists/*
+ADD ./run.py /run.py
 
-ENTRYPOINT ["/perf-scripts/bin/auto-run.py"]
+ENTRYPOINT ["/run.py"]
