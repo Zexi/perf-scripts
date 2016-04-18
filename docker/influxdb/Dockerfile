@@ -1,47 +1,28 @@
-# vim:set ft=dockerfile:
+FROM tutum/curl:trusty
+MAINTAINER Zexi Li <zexi.li@aliyun.com>
 
-# Base on VRT Base image
-FROM vrtsystems/baseimage:0.1.0
-MAINTAINER VRT Engineering <engineering@vrt.com.au>
+# Install InfluxDB
+RUN curl -s -o /tmp/influxdb_latest_amd64.deb https://s3.amazonaws.com/influxdb/influxdb_${INFLUXDB_VERSION}_amd64.deb && \
+    dpkg -i /tmp/influxdb_latest_amd64.deb && \
+    rm /tmp/influxdb_latest_amd64.deb && \
+    apt-get remove -y curl && \
+    apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 
-# add our user and group first to make sure their IDs get assigned
-# consistently, regardless of whatever dependencies get added later
-RUN groupadd -r influxdb && useradd -r -g influxdb influxdb
+ADD types.db /usr/share/collectd/types.db
+ADD config.toml /config/config.toml
+ADD run.sh /run.sh
+RUN chmod +x /*.sh
 
-ENV INFLUX_VERSION 0.9.5
-ENV INFLUX_CONFIG /etc/influxdb/influxdb.conf
-ENV INFLUX_DATA /var/local/influxdb
-
-RUN curl https://s3.amazonaws.com/influxdb/influxdb_${INFLUX_VERSION}_amd64.deb > /tmp/influxdb_amd64.deb \
-	&& dpkg -i /tmp/influxdb_amd64.deb \
-	&& cd /etc/influxdb/ && cp influxdb.conf influxdb.conf.orig \
-	&& mkdir /var/local/influxdb && chown influxdb:influxdb /var/local/influxdb \
-	&& sed -i "s/var\/lib\/influxdb/var\/local\/influxdb/" "$INFLUX_CONFIG" \
-	&& mkdir -p /usr/local/etc/docker-influxdb/prestart-init.d \
-	&& mkdir -p /usr/local/etc/docker-influxdb/poststart-init.d \
-	&& echo "=== Cleaning up ========================" \
-	&& rm /tmp/influxdb_amd64.deb \
-	&& /usr/local/sbin/docker-cleanup.sh
-
-#ENV PATH /opt/influxdb:$PATH
-
-COPY env-ini.py /usr/local/sbin/env-ini.py
-
-COPY docker-entrypoint.sh /usr/local/sbin/
-COPY supervisord-postinit.sh /usr/local/sbin/
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
+ENV PRE_CREATE_DB **None**
 ENV SSL_SUPPORT **False**
 ENV SSL_CERT **None**
 
-# Admin server
+# Admin server WebUI
 EXPOSE 8083
 
 # HTTP API
 EXPOSE 8086
-
-# HTTPS API
-EXPOSE 8084
 
 # Raft port (for clustering, don't expose publicly!)
 #EXPOSE 8090
@@ -49,6 +30,6 @@ EXPOSE 8084
 # Protobuf port (for clustering, don't expose publicly!)
 #EXPOSE 8099
 
-ENTRYPOINT ["/usr/local/sbin/docker-entrypoint.sh"]
+VOLUME ["/data"]
 
-CMD ["supervisor"]
+CMD ["/run.sh"]
