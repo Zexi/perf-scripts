@@ -74,12 +74,13 @@ if opt_set_key_value:
     for k, v in opt_set_key_value.iteritems:
         job[k] = v
 
+_result_root = job._result_root()
 if opt_result_root == None:
-    _result_root = job._result_root()
-    result_root = create_result_root(_result_root)
-    os.environ['RESULT_ROOT'] = result_root
+    result_root = _result_root
 else:
-    result_root = opt_result_root
+    result_root = opt_result_root + os.sep + _result_root
+result_root = create_result_root(result_root)
+os.environ['RESULT_ROOT'] = result_root
 
 os.environ['TMP_RESULT_ROOT'] = os.environ['RESULT_ROOT']
 
