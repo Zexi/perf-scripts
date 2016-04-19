@@ -19,17 +19,18 @@ LOG_FILE = LOG_PATH + '/server.log'
 LIB_PATH = SRC + '/lib'
 sys.path.insert(0, LIB_PATH)
 import common
-import mongodb
 import result
 import influxdb_pst
 
 # load server config
 conf_dict = common.load_conf(SRC + '/etc/pst_server.yaml')
 server_port = str(conf_dict['pst_server']['port'])
-os.environ['INFLUXDB_HOST'] = str(conf_dict['influxdb']['ip'])
-os.environ['INFLUXDB_PORT'] = str(conf_dict['influxdb']['port'])
-os.environ['INFLUXDB_USER'] = str(conf_dict['influxdb']['user'])
-os.environ['INFLUXDB_PASS'] = str(conf_dict['influxdb']['pass'])
+
+INFLUXDB_HOST  = str(conf_dict['influxdb']['ip'])
+INFLUXDB_PORT  = str(conf_dict['influxdb']['port'])
+INFLUXDB_USER  = str(conf_dict['influxdb']['user'])
+INFLUXDB_PASS  = str(conf_dict['influxdb']['pass'])
+INFLUXDB_DBNAME = str(conf_dict['influxdb']['dbname'])
 
 define("port", default=server_port, help="run on the given port", type=int)
 
@@ -48,10 +49,8 @@ class Application(tornado.web.Application):
                 ui_modules={'Item': ItemModule, 'PicContent': PicContentModule, 'Pic': PicModule },
                 debug=True
                 )
-        conn = mongodb.client('localhost', 27017)
-        self.db = conn["pst"]
-        self.influxdb_client = influxdb_pst.conn()
-        influxdb_pst.create_db(self.influxdb_client)
+        self.influxdb_client = influxdb_pst.conn(INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASS, INFLUXDB_DBNAME)
+        influxdb_pst.create_db(self.influxdb_client, INFLUXDB_DBNAME)
         tornado.web.Application.__init__(self, handlers, **settings)
 
 class ItemModule(tornado.web.UIModule):
@@ -86,7 +85,6 @@ class ResultsHandler(tornado.web.RequestHandler):
         testcase = self.get_argument("testcase")
         job_params = self.get_argument("job_params")
 
-        db_coll = self.application.db.results
         influxdb_client = self.application.influxdb_client
 
         upload_path = WORKSPACE + '/tmp'
@@ -103,9 +101,7 @@ class ResultsHandler(tornado.web.RequestHandler):
                     common.extract_tar_gz(filepath, WORKSPACE)
                     os.remove(filepath)
             self.write('Upload %s successfully!\n' % filename)
-            # rrdb_file will be unicode str, rrdtool not support it
             testcase_prefix = '%s/%s/%s/%s/%s' % (testcase, job_params, testbox, rootfs, commit)
-            rrdb_file = str(RRDB_PATH + '/' + testcase_prefix + '/record.rrd')
 
             influxdb_tags = {
                 'testcase': testcase,
@@ -115,20 +111,13 @@ class ResultsHandler(tornado.web.RequestHandler):
                 'commit': commit,
             }
 
-            # record testcase info to mongodb
-            mongodb_info = copy.deepcopy(influxdb_tags)
-            mongodb_info['rrdb_file'] = rrdb_file
-            mongodb.coll_insert(db_coll, mongodb_info)
-
             if not os.path.exists(RRDB_PATH + '/' + testcase_prefix):
                 os.makedirs(RRDB_PATH + '/' + testcase_prefix, 02775)
             result_path = '%s/results/%s/%s' % (WORKSPACE, testcase_prefix, start_time)
             if testcase in DIFF_SUB_TEST:
-                result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path, influxdb_client, influxdb_tags, job_params)
-                result.plot_rrdbs(db_coll, testcase_prefix, accord_param=True)
+                result.update_influxdb(str(testcase), start_time, result_path, influxdb_client, influxdb_tags, job_params)
             else:
-                result.update_rrdbs(str(testcase), rrdb_file, start_time, result_path, influxdb_client, influxdb_tags)
-                result.plot_rrdbs(db_coll, testcase_prefix)
+                result.update_influxdb(str(testcase), start_time, result_path, influxdb_client, influxdb_tags)
 
 def init_log():
     if not os.path.exists(LOG_PATH):
@@ -143,7 +132,7 @@ def init_log():
 
 if __name__ == "__main__":
     tornado.options.parse_command_line()
-    init_log()
+    #init_log()
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()

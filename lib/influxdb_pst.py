@@ -7,16 +7,10 @@ from datetime import datetime
 import time
 import os
 
-INFLUXDB_HOST = os.getenv('INFLUXDB_HOST', '127.0.0.1')
-INFLUXDB_PORT = os.getenv('INFLUXDB_PORT', '8086')
-INFLUXDB_USER = os.getenv('INFLUXDB_USER', 'root')
-INFLUXDB_PASS = os.getenv('INFLUXDB_PASS', 'root')
-INFLUXDB_DBNAME = 'pst_results'
-
-def conn(host=INFLUXDB_HOST, port=INFLUXDB_PORT, user=INFLUXDB_USER, password=INFLUXDB_PASS, db=INFLUXDB_DBNAME):
+def conn(host, port, user, password, db):
     return InfluxDBClient(host, port, user, password, db)
 
-def create_db(client, db=INFLUXDB_DBNAME):
+def create_db(client, db):
     dbs = client.get_list_database()
     if {'name': db} not in dbs:
         try:
@@ -46,7 +40,7 @@ def gen_points(measuremnts_li, tags, time, fields_li):
                 )
         return points
 
-def insert_rrdb_point(client, measuremnt, tags, start_time, fields):
+def insert_point(client, measuremnt, tags, start_time, fields):
     point_body = [
             {
                 #"time": datetime.fromtimestamp(start_time).strftime("%Y-%m-%dT%H:%M:%SZ"),
