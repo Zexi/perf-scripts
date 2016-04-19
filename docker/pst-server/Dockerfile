@@ -8,7 +8,7 @@ RUN apt-get update && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install influxdb
+RUN pip install --upgrade influxdb
 
 RUN git clone -b dev https://github.com/Zexi/perf-scripts/
 WORKDIR /perf-scripts/docker/pst-server
