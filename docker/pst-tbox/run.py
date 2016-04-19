@@ -18,7 +18,8 @@ conf_dict['server']['res'] = os.getenv('SERVER_RES', 'results')
 jobs_env = os.getenv('TBOX_JOBS', '').split(';')
 jobs = conf_dict['jobs']
 
-jobs = set(jobs + jobs_env)
+jobs = list(set(jobs + jobs_env))
+conf_dict['jobs'] = jobs
 
 print "--------------------------------"
 print "Jobs been run: %s" % jobs
@@ -26,4 +27,5 @@ print "--------------------------------"
 common.unify_localtime()
 common.save_yaml(conf_file, conf_dict)
 subprocess.call("/perf-scripts/bin/auto-install.py", shell=True)
+subprocess.call("service mysql start", shell=True)
 subprocess.call("/perf-scripts/bin/auto-run.py", shell=True)
