@@ -15,7 +15,10 @@ conf_dict['runtime'] = int(os.getenv('RUNTIME', 300))
 conf_dict['server']['hostname'] = os.getenv('SERVER_IP', '127.0.0.1')
 conf_dict['server']['port'] = os.getenv('SERVER_PORT', 8080)
 conf_dict['server']['res'] = os.getenv('SERVER_RES', 'results')
+
 jobs_env = os.getenv('TBOX_JOBS', '').split(';')
+jobs_env = [x for x in jobs_env if x]
+
 jobs = conf_dict['jobs']
 
 jobs = list(set(jobs + jobs_env))
