@@ -1,0 +1,9 @@
+testcase: climc-cqd
+
+climc-cqd:
+  test_type: vm
+  test_scale:
+    - 1
+    - 10
+    - 50
+  test_server_name: lzx-test-server

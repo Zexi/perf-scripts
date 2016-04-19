@@ -1,0 +1,89 @@
+#!/bin/bash
+# - test_type
+# - test_scale
+# - test_server_name
+
+TYPE=$test_type
+SCALE=$test_scale
+
+climc=/opt/cloud/meituan/client/climc
+TEST_SERVER_NAME=$test_server_name
+
+if [ $TYPE == "docker" ]; then
+    CMD1="$climc server-create --container --image 84040334-ebf4-400b-8124-84c4d4d7cad4 --allow-delete --auto-start --pool just_for_docker --mem 2048 "$TEST_SERVER_NAME" --count "$SCALE
+    #CMD1="$climc server-create --container --set-conf ./set.conf --allow-delete --auto-start --aggregate just_for_docker:require --zone yongfeng --mem 2048 "$TEST_SERVER_NAME" --count "$SCALE
+    #CMD1="$climc server-create --container --set-conf ./set.conf --allow-delete --auto-start --pool just_for_docker --cpu-weight 1 --mem 2048 "$TEST_SERVER_NAME" --count "$SCALE
+elif [ $TYPE == "vm" ]; then
+    CMD1="$climc server-create --disk eed0547b-d15e-46b2-867b-7147b25d9063 --allow-delete --auto-start --ncpu 2 --mem 2048  --extra-ext-disksize 100 "$TEST_SERVER_NAME" --count "$SCALE
+else
+    echo "choose docker or vm"
+    exit 1
+fi
+    
+CMD2="$climc server-list --filter 'name.startswith($TEST_SERVER_NAME)'"
+
+CMD3="$climc server-delete" 
+
+if [ $SCALE -gt 1 ]; then
+    for idx in $(seq 1 $SCALE)
+    do
+        CMD3=$CMD3" $TEST_SERVER_NAME""-""`printf %d $idx`"
+    done
+else
+    CMD3=$CMD3" $TEST_SERVER_NAME"
+fi
+    
+function wait_servers_running() {
+    while true; do
+        local status=$($climc server-list --filter "name.startswith($TEST_SERVER_NAME)" --limit $SCALE| awk '{if ($10 ~ /^[0-9]+$/) print $8}' |xargs)
+        #echo "status="$status
+        in=0
+        for ss in $status; do
+            if [[ $ss != "running" ]]; then
+                #echo "still not"
+                in=1
+                break
+            fi
+        done
+        if [ $in == 0 ]; then
+            echo "all running"
+            return 
+        fi
+    done
+}
+
+function wait_servers_deleted() {
+    while true; do
+        local status=$($climc server-list --filter "name.startswith($TEST_SERVER_NAME)" | wc -l)
+        if [ $status == 2 ]; then
+            echo "All server deleted successfully!"
+            return
+        fi
+    done
+}
+
+echo "==== Test for $TYPE $SCALE containers ===="
+for cmd in "${CMD1}" "${CMD2}" "${CMD3}"; do
+    ACTION=$(echo $cmd|cut -d" " -f2)
+    echo "$ACTION $TYPE containers BEGIN"
+    BEGIN=$(date "+%s")
+    echo $cmd
+    $cmd > $RESULT_ROOT/climc.log
+    return_code=$?
+    if [ $return_code != 0 ]; then
+        cat $RESULT_ROOT/climc.log
+        exit $return_code
+    fi
+    if [ $ACTION == "server-create" ]; then
+        wait_servers_running
+    fi
+    if [ $ACTION == "server-delete" ]; then
+        wait_servers_deleted
+    fi
+    END=$(date "+%s")
+    DIFF=$(($END-$BEGIN))
+cat <<EOF | tee -a "$RESULT_ROOT/$TYPE-$SCALE.result"
+    `echo "$ACTION $SCALE $TYPE containers cost: $DIFF seconds"`
+EOF
+done
+
