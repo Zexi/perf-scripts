@@ -17,9 +17,9 @@ RUN git clone -b dev https://github.com/Zexi/perf-scripts/
 # Install sysbench and configure mysql
 # Install MySQL Server in a Non-Interactive mode. Default root password will be "pass"
 RUN echo "mysql-server-5.6 mysql-server/root_password password pass" | debconf-set-selections && \
-    echo "mysql-server-5.6 mysql-server/root_password_again password pass" | sudo debconf-set-selections && \
+    echo "mysql-server-5.6 mysql-server/root_password_again password pass" | debconf-set-selections && \
     apt-get -y install mysql-server-5.6 && \
-    mysql -u root -ppass -e "create database test"
+    service mysql start && mysql -u root -ppass -e "create database test"
 
 # Install and run benchmarks
 ENV TBOX_JOBS ${TBOX_JOBS:-superpi;ping;sysbench}
