@@ -114,10 +114,7 @@ class ResultsHandler(tornado.web.RequestHandler):
             if not os.path.exists(RRDB_PATH + '/' + testcase_prefix):
                 os.makedirs(RRDB_PATH + '/' + testcase_prefix, 02775)
             result_path = '%s/results/%s/%s' % (WORKSPACE, testcase_prefix, start_time)
-            if testcase in DIFF_SUB_TEST:
-                result.update_influxdb(str(testcase), start_time, result_path, influxdb_client, influxdb_tags, job_params)
-            else:
-                result.update_influxdb(str(testcase), start_time, result_path, influxdb_client, influxdb_tags)
+            result.update_influxdb(testcase, start_time, result_path, influxdb_client, influxdb_tags)
 
 def init_log():
     if not os.path.exists(LOG_PATH):
