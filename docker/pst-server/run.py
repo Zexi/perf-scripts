@@ -21,5 +21,4 @@ conf_dict['influxdb']['dbname'] = os.getenv('INFLUXDB_DBNAME', 'pst_results')
 common.save_yaml(conf_file, conf_dict)
 
 common.unify_localtime()
-subprocess.call('service mongodb start', shell=True)
 subprocess.call(SRC + '/server/server.py', shell=True)

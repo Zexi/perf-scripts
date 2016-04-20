@@ -4,7 +4,7 @@ MAINTAINER Zexi Li <zexi.li@aliyun.com>
 
 RUN sed -i 's|\(http://\).*\(/ubuntu/\)|\1mirrors.aliyun.com\2|g' /etc/apt/sources.list
 RUN apt-get update && \
-    apt-get install -y rrdtool mongodb python python-yaml python-rrdtool python-pymongo python-tornado python-pip git && \
+    apt-get install -y python python-yaml python-tornado python-pip git && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
