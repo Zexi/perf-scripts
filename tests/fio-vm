@@ -14,34 +14,35 @@ runtime=$runtime
 direct=1
 blocksize=$blocksize
 filename=$filename
+numjobs=1
 group_reporting
 size=$size
 
 [seq-read]
-rw=read
-ioengine=psync 
-blocksize=1024k
+rw=randread
+ioengine=libaio
+blocksize=64k
+iodepth=64
 stonewall
 
 [rand-read]
 rw=randread
 ioengine=libaio
 blocksize=4k
-iodepth=32
-thread
+iodepth=128
 stonewall
 
 [seq-write]
-rw=write
-ioengine=psync
-blocksize=1024k
+rw=randwrite
+ioengine=libaio
+blocksize=64k
+iodepth=64
 stonewall
 
 [rand-write]
 rw=randwrite
 ioengine=libaio
 blocksize=4k
-iodepth=32
-thread
+iodepth=128
 stonewall
 EOF

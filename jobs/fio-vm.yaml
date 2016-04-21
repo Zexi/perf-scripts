@@ -3,6 +3,6 @@ category: benchmark
 
 fio:
   filename: /data/fio.img
-  ioengine: libaio_psync
-  bs: 4k
+  ioengine: libaio
+  bs: 64k
   size: 10G
