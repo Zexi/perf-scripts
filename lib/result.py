@@ -18,7 +18,8 @@ def update_influxdb(testcase_name, start_time, result_path, influxdb_client, inf
 
     result_json_file = testcase_name + '.json'
     res, start_time = return_res_time(result_path, result_json_file, start_time)
-    influxdb_pst.insert_point(influxdb_client, testcase_name, influxdb_tags, start_time, res)
+    measurement = testcase_name.replace('-', '_')
+    influxdb_pst.insert_point(influxdb_client, measurement, influxdb_tags, start_time, res)
 
 def return_res_time(result_path, result_json_file, start_time):
     res = common.load_json(result_path.replace('"', '') + '/' + result_json_file)
