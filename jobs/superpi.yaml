@@ -1,4 +1,6 @@
 testcase: superpi
 
 superpi:
-  digits: 20
+  digits: 
+    - 20
+    - 22

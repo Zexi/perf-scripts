@@ -2,7 +2,7 @@ testcase: fio-vm
 category: benchmark
 
 fio:
-  filename: /dev/vdd1
+  filename: /data/fio.img
   ioengine: libaio_psync
   bs: 4k
   size: 10G
