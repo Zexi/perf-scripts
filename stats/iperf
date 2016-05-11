@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+import sys
+import json
+
+result = json.load(sys.stdin)
+
+if not result.get('end'):
+    exit
+
+if result['end']['streams'][0].get('sender'):
+    print("tcp.sender.bps: " + str(result['end']['streams'][0]['sender']['bits_per_second']))
+if result['end']['streams'][0].get('receiver'):
+    print("tcp.receiver.bps: " + str(result['end']['streams'][0]['receiver']['bits_per_second']))
+if result['end']['streams'][0].get('udp'):
+    print("udp.bps: " + str(result['end']['streams'][0]['udp']['bits_per_second']))
