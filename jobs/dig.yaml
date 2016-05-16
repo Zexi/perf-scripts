@@ -1,0 +1,9 @@
+testcase: dig
+
+dig_iterations: 50
+
+dig:
+  dns_server:
+    -
+    - 114.114.114.114
+  test_hostname: www.baidu.com

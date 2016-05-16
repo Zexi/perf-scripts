@@ -1,0 +1,15 @@
+#!/bin/sh
+# - dns_server
+# - test_hostname
+
+## dig (domain information groper) is a flexible tool for interrogating DNS name servers.
+## It performs DNS lookups and displays the answers that are returned from the name
+## server(s) that were queried. 
+
+[ -n "$dns_server" ] && dns_server="@$dns_server"
+
+for i in $(seq 1 $dig_iterations)
+do
+    echo Iteration: $i
+    cmd dig $dns_server $test_hostname
+done
