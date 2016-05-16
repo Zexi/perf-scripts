@@ -140,7 +140,12 @@ def create_host_config(hostname):
 
 def remove_res_point_arr(res):
     for k, v in res.iteritems():
-        res[k] = v[0]
+        if len(v) > 3:
+            v.remove(min(v))
+            v.remove(max(v))
+            res[k] = float(sum(v)) / len(v)
+        else:
+            res[k] = float(sum(v)) / len(v)
 
 def load_conf(conf_file):
     with open(conf_file) as f:
