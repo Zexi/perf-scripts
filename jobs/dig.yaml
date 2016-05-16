@@ -1,6 +1,7 @@
 testcase: dig
 
 dig_iterations: 50
+real_cmd: pydig
 
 dig:
   dns_server:

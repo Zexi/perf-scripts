@@ -1,0 +1,18 @@
+#!/bin/bash
+
+download()
+{
+    git_clone_update https://github.com/shuque/pydig
+    source_dir="/tmp/pydig"
+}
+
+build()
+{
+    cd $source_dir
+    python ./setup.py install
+}
+
+install()
+{
+    :
+}

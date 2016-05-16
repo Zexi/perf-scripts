@@ -5,5 +5,8 @@ import re
 
 for line in sys.stdin:
     query_time = re.search(r'^;;.*Query time: ([\d]+) msec', line)
+    pydig_query_time = re.search(r'.*response.*in ([.\d]+) sec', line)
     if query_time:
-        print "query_time: " + str(query_time.group(1))
+        print "query_time: " + str((float(query_time.group(1)) + 0.001))
+    if pydig_query_time:
+        print "pydig_query_time: " + str((float(pydig_query_time.group(1)) + 0.000001) * 1000)

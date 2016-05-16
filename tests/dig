@@ -1,4 +1,5 @@
 #!/bin/sh
+# - real_cmd
 # - dns_server
 # - test_hostname
 
@@ -7,9 +8,10 @@
 ## server(s) that were queried. 
 
 [ -n "$dns_server" ] && dns_server="@$dns_server"
+[ -n "$real_cmd" ] || real_cmd="dig"
 
 for i in $(seq 1 $dig_iterations)
 do
     echo Iteration: $i
-    cmd dig $dns_server $test_hostname
+    cmd $real_cmd $dns_server $test_hostname
 done
