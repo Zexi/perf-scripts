@@ -1,7 +1,5 @@
 #!/bin/bash
 
-: ${runtime:=30}
-
 jobfile=fio_vm_${ioengine}_${blocksize}
 [ "${jobfile#*__}" != "$jobfile" ] && {
     echo "error composing $jobfile: missing options" >&2
@@ -10,7 +8,6 @@ jobfile=fio_vm_${ioengine}_${blocksize}
 
 cat > $jobfile <<EOF
 [global]
-runtime=$runtime
 direct=1
 blocksize=$blocksize
 filename=$filename
@@ -18,22 +15,15 @@ numjobs=1
 group_reporting
 size=$size
 
-[seq-read]
-rw=randread
+[seq-write]
+rw=randwrite
 ioengine=libaio
 blocksize=64k
 iodepth=64
 stonewall
 
-[rand-read]
+[seq-read]
 rw=randread
-ioengine=libaio
-blocksize=4k
-iodepth=128
-stonewall
-
-[seq-write]
-rw=randwrite
 ioengine=libaio
 blocksize=64k
 iodepth=64
@@ -45,4 +35,12 @@ ioengine=libaio
 blocksize=4k
 iodepth=128
 stonewall
+
+[rand-read]
+rw=randread
+ioengine=libaio
+blocksize=4k
+iodepth=128
+stonewall
+
 EOF

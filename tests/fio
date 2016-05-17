@@ -6,18 +6,22 @@
 # - fallocate
 # - sub_group_number
 # - group_file_number
+# - host_cache_mode
+# - vm_disk_type
 
 ## fio  is  a  tool that will spawn a number of threads or processes
 ## doing a particular type of I/O action as specified by the user.
 ## The typical use of fio is to write a job file matching
 ## the I/O load one wants to simulate.
 
-echo runtime=$runtime
 echo rw=$rw
 echo bs=$bs
 echo ioengine=$ioengine
 echo fallocate=$fallocate
 echo size=$size
+echo host_cache_mode=$host_cache_mode
+echo vm_disk_type=$vm_disk_type
+
 
 : ${bs:=4k}
 : ${size:=10G}
