@@ -16,6 +16,7 @@ group_reporting
 size=$size
 
 [seq-write]
+runtime=600
 rw=randwrite
 ioengine=libaio
 blocksize=64k
@@ -23,6 +24,7 @@ iodepth=64
 stonewall
 
 [seq-read]
+runtime=60
 rw=randread
 ioengine=libaio
 blocksize=64k
@@ -30,6 +32,7 @@ iodepth=64
 stonewall
 
 [rand-write]
+runtime=600
 rw=randwrite
 ioengine=libaio
 blocksize=4k
@@ -37,6 +40,7 @@ iodepth=128
 stonewall
 
 [rand-read]
+runtime=60
 rw=randread
 ioengine=libaio
 blocksize=4k
