@@ -11,3 +11,10 @@ jobs:
   - fio-vm
   - sysbench
   - ping
+
+# config for test which should sync run
+sync:
+  dir: ./workspace/tmp
+  jobs:
+    - fio-vm
+  timeout: 60
