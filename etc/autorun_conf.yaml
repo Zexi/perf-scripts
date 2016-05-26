@@ -16,5 +16,6 @@ jobs:
 sync:
   dir: ./workspace/tmp
   jobs:
+    - all
     - fio-vm
   timeout: 60

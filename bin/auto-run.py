@@ -49,25 +49,42 @@ def run_each_job(conf_dict, uploadurl):
     sync_dir = conf_dict.get('sync', {}).get('dir')
     sync_list = conf_dict.get('sync', {}).get('jobs')
     wait_timeout = conf_dict.get('sync', {}).get('timeout')
-    for unit_jobfile in split_jobs_path:
-        run_cmd = "%s run -j %s -u %s" % (SRC + '/bin/pst', unit_jobfile, uploadurl)
-        # add lock to sync there, e.g. run doker and host test same time
-        testcase_name = common.load_conf(unit_jobfile).get('testcase')
-        if sync_dir and sync_list and testcase_name in sync_list:
-            lock = LockFile(sync_dir + os.sep + testcase_name)
-            try:
-                lock.acquire(timeout=wait_timeout)
+
+    if sync_dir and sync_list and 'all' in sync_list:
+        try:
+            lock = LockFile(sync_dir + os.sep + 'all')
+            lock.acquire()
+            for unit_jobfile in split_jobs_path:
+                run_cmd = "%s run -j %s -u %s" % (SRC + '/bin/pst', unit_jobfile, uploadurl)
                 run_shell_cmd(run_cmd)
+                print("Remove: %s" % unit_jobfile)
+                os.remove(unit_jobfile)
+        except KeyboardInterrupt:
+            if lock.is_locked():
                 lock.release()
-            except LockTimeout as e:
-                print e
-            except KeyboardInterrupt:
-                if lock.is_locked():
+                raise
+    else:
+        for unit_jobfile in split_jobs_path:
+            run_cmd = "%s run -j %s -u %s" % (SRC + '/bin/pst', unit_jobfile, uploadurl)
+            # add lock to sync there, e.g. run doker and host test same time
+            testcase_name = common.load_conf(unit_jobfile).get('testcase')
+
+            if sync_dir and sync_list and testcase_name in sync_list:
+                lock = LockFile(sync_dir + os.sep + testcase_name)
+                try:
+                    lock.acquire(timeout=wait_timeout)
+                    run_shell_cmd(run_cmd)
                     lock.release()
-        else:
-            run_shell_cmd(run_cmd)
-        print("Remove: %s" % unit_jobfile)
-        os.remove(unit_jobfile)
+                except LockTimeout as e:
+                    print e
+                except KeyboardInterrupt:
+                    if lock.is_locked():
+                        lock.release()
+                        raise
+            else:
+                run_shell_cmd(run_cmd)
+            print("Remove: %s" % unit_jobfile)
+            os.remove(unit_jobfile)
 
 common.unify_localtime()
 conf_dict = common.load_conf(SRC + '/etc/autorun_conf.yaml')
