@@ -59,6 +59,7 @@ def run_each_job(conf_dict, uploadurl):
                 run_shell_cmd(run_cmd)
                 print("Remove: %s" % unit_jobfile)
                 os.remove(unit_jobfile)
+            lock.release()
         except KeyboardInterrupt:
             if lock.is_locked():
                 lock.release()
