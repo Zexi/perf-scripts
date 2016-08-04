@@ -22,15 +22,19 @@ for job in fio_jobs:
         res_val = job['read']
         print 'seq_read.throughput: ' + str(float(res_val['bw']))
         print 'seq_read.iops: ' + str(float(res_val['iops']))
+        print 'seq_read.lat: ' + str(float(res_val['lat']['mean']))
     if job['jobname'] == 'rand-read':
         res_val = job['read']
         print 'rand_read.throughput: ' + str(float(res_val['bw']))
         print 'rand_read.iops: ' + str(float(res_val['iops']))
+        print 'rand_read.lat: ' + str(float(res_val['lat']['mean']))
     if job['jobname'] == 'seq-write':
         res_val = job['write']
         print 'seq_write.throughput: ' + str(float(res_val['bw']))
         print 'seq_write.iops: ' + str(float(res_val['iops']))
+        print 'seq_write.lat: ' + str(float(res_val['lat']['mean']))
     if job['jobname'] == 'rand-write':
         res_val = job['write']
         print 'rand_write.throughput: ' + str(float(res_val['bw']))
         print 'rand_write.iops: ' + str(float(res_val['iops']))
+        print 'rand_write.lat: ' + str(float(res_val['lat']['mean']))

@@ -1,10 +1,7 @@
-testcase: fio-vm
+testcase: fio-ebs
 category: benchmark
 
 fio:
-  filename: /ebs-data/fio.img
-  ioengine: libaio
-  bs: 64k
-  size: 10G
+  filename: /dev/vdc
   host_cache_mode: none
   vm_disk_type: ebs
