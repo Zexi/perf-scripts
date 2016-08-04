@@ -43,4 +43,15 @@ blocksize=4k
 iodepth=32
 stonewall
 
+[seq-read-lat]
+rw=read
+ioengine=psync
+blocksize=512
+stonewall
+
+[seq-write-lat]
+rw=write
+ioengine=psync
+blocksize=512
+stonewall
 EOF
