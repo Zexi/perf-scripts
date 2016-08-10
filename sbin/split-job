@@ -12,8 +12,8 @@ import job
 import common
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-o', '--output', help="output path", type=str)
-parser.add_argument('-t', '--testbox', help="--test-box HOSTNAME", type=str)
+parser.add_argument('-o', '--output', metavar='<OUTPUT_PATH>', default='.', help="output path", type=str)
+parser.add_argument('-t', '--testbox', metavar='<HOSTNAME>', help="--test-box HOSTNAME", type=str)
 parser.add_argument('--no-defaults', help="do not load the defaults headers", type=str, default="no")
 parser.add_argument('-j', '--jobs', help="specify job files", nargs='+', type=str)
 
