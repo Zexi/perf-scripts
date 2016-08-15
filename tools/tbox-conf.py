@@ -23,7 +23,10 @@ jobs = conf_dict.get('jobs', [])
 if not jobs:
     jobs = []
 
-jobs = list(set(jobs + jobs_env))
+if os.getenv('CLEAN_JOBS', False):
+    jobs = list(set(jobs_env))
+else:
+    jobs = list(set(jobs + jobs_env))
 conf_dict['jobs'] = jobs
 
 print "--------------------------------"
