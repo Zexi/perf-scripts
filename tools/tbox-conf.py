@@ -19,7 +19,9 @@ conf_dict['server']['res'] = os.getenv('SERVER_RES', 'results')
 jobs_env = os.getenv('TBOX_JOBS', '').split(';')
 jobs_env = [x for x in jobs_env if x]
 
-jobs = conf_dict['jobs']
+jobs = conf_dict.get('jobs', [])
+if not jobs:
+    jobs = []
 
 jobs = list(set(jobs + jobs_env))
 conf_dict['jobs'] = jobs
