@@ -33,7 +33,7 @@ if 'sysbench' in jobs:
     cmds.append('echo "mysql-server-5.6 mysql-server/root_password password pass" | debconf-set-selections')
     cmds.append('echo "mysql-server-5.6 mysql-server/root_password_again password pass" | debconf-set-selections')
     cmds.append('apt-get -y install mysql-server-5.6')
-    cmds.append('mysql -u root -ppass -e "create database test"')
+    cmds.append('mysql -u root -ppass -e "create database if not exists test"')
     for cmd in cmds:
         subprocess.check_call(cmd, shell=True)
 
