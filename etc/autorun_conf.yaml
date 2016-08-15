@@ -1,4 +1,4 @@
-runtime: 300
+runtime: 1
 
 server:
   hostname: 172.30.26.228
@@ -6,11 +6,6 @@ server:
   res: results
 
 jobs:
-  - superpi
-  - mbw
-  - fio-vm
-  - sysbench
-  - ping
 
 # config for test which should sync run
 sync:
