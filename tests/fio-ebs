@@ -14,19 +14,19 @@ direct=1
 filename=$filename
 numjobs=1
 group_reporting
-size=100%
-runtime=$runtime
 
 [seq-write]
 ioengine=psync
 blocksize=1M
 rw=write
+size=10G
 stonewall
 
 [seq-read]
 ioengine=psync
 blocksize=1M
 rw=read
+size=10G
 stonewall
 
 [rand-write]
@@ -34,6 +34,7 @@ rw=randwrite
 ioengine=libaio
 blocksize=4k
 iodepth=32
+runtime=$runtime
 stonewall
 
 [rand-read]
@@ -41,17 +42,20 @@ rw=randread
 ioengine=libaio
 blocksize=4k
 iodepth=32
+runtime=$runtime
 stonewall
 
 [seq-write-lat]
 rw=write
 ioengine=psync
 blocksize=512
+runtime=$runtime
 stonewall
 
 [seq-read-lat]
 rw=read
 ioengine=psync
 blocksize=512
+runtime=$runtime
 stonewall
 EOF
