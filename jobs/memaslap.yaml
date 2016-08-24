@@ -1,0 +1,8 @@
+testcase: memaslap
+
+memcslap:
+  servers: 172.16.167.206
+  threads: 4
+  concurrency: 128
+  run_time: 60s
+  flavour: c1m1

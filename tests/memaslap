@@ -1,0 +1,10 @@
+#!/bin/sh
+# - flavour
+
+## memaslap is a load generation and benchmark tool for memcached servers. It generates
+## configurable workload such as threads, concurrencies, connections, run time, overwrite,
+## miss rate, key size, value size, get/set proportion, expected throughput, and so on.
+
+cmd="memaslap -s $servers -T $threads -c $concurrency -t $run_time"
+echo "$(date +'%F %T') ${cmd}" | tee -a $RESULT_ROOT/reproduce.sh
+${cmd}

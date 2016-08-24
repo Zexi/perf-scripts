@@ -6,3 +6,4 @@ mesa-libGL-devel: libgl1-mesa-dev
 libXext-devel: libxext-dev
 perl-Time-HiRes: perl perl-modules
 redis: redis-tools
+libmemcached: libmemcached-tools
