@@ -1,5 +1,6 @@
 #!/bin/sh
 # - test
+# - db_flavour
 
 ## SysBench is a modular, cross-platform and multi-threaded benchmark tool for evaluating
 ## OS parameters that are important for a system running a database under intensive load.
@@ -13,6 +14,22 @@
 ##   * POSIX threads implementation performance
 ##   * database server performance (OLTP benchmark)
 
+if [ -n "$oltp_tests_path" ]; then
+    test_cmd="--test=$oltp_tests_path"
+else
+    test_cmd="--test=oltp"
+fi
+
+: ${mysql_host:="localhost"}
+: ${mysql_port:="3306"}
+: ${max_time:="300"}
+: ${num_threads:="6"}
+
+cmd_append=""
+
+[ -n "$oltp_test_mode" ] && cmd_append="$cmd_append --oltp-test-mode=$oltp_test_mode"
+[ -n "$mysql_table_engine" ] && cmd_append="$cmd_append --mysql-table-engine=$mysql_table_engine"
+
 cpu_test()
 {
     cmd sysbench --test=cpu --cpu-max-prime=$cpu_max_prime run
@@ -20,9 +37,9 @@ cpu_test()
 
 oltp_test()
 {
-    pre_cmd="sysbench --test=oltp --oltp-table-size=$oltp_table_size --mysql-db=$mysql_db --mysql-user=$mysql_user --mysql-password=$mysql_pass prepare --db-driver=mysql"
-    run_cmd="sysbench --test=oltp --oltp-table-size=$oltp_table_size --mysql-db=$mysql_db --mysql-user=$mysql_user --mysql-password=$mysql_pass --max-time=$max_time  --oltp-read-only=on --max-requests=0 --num-threads=$num_threads run --db-driver=mysql"
-    clean_cmd="sysbench --test=oltp --mysql-db=$mysql_db --mysql-user=$mysql_user --mysql-password=$mysql_pass cleanup --db-driver=mysql"
+    pre_cmd="sysbench $test_cmd --oltp-table-size=$oltp_table_size --mysql-host=$mysql_host --mysql-port=$mysql_port --mysql-db=$mysql_db --mysql-user=$mysql_user --mysql-password=$mysql_pass $cmd_append prepare --db-driver=mysql"
+    run_cmd="sysbench $test_cmd --oltp-table-size=$oltp_table_size --mysql-host=$mysql_host --mysql-port=$mysql_port --mysql-db=$mysql_db --mysql-user=$mysql_user --mysql-password=$mysql_pass --max-time=$max_time --max-requests=0 --num-threads=$num_threads $cmd_append run --db-driver=mysql"
+    clean_cmd="sysbench $test_cmd --mysql-host=$mysql_host --mysql-port=$mysql_port --mysql-db=$mysql_db --mysql-user=$mysql_user --mysql-password=$mysql_pass $cmd_append cleanup --db-driver=mysql"
 
     for cmd in "$pre_cmd" "$run_cmd" "$clean_cmd"; do
         echo "$(date +'%F %T') ${cmd}" | tee -a $RESULT_ROOT/reproduce.sh
