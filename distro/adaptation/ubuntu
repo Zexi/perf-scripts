@@ -5,3 +5,4 @@ libX11-devel: libx11-dev
 mesa-libGL-devel: libgl1-mesa-dev
 libXext-devel: libxext-dev
 perl-Time-HiRes: perl perl-modules
+redis: redis-tools

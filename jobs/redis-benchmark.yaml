@@ -1,0 +1,12 @@
+testcase: redis-benchmark
+
+redis-benchmark:
+  hostname: 127.0.0.1
+  port: 6379
+  tests: get+set
+  pipeline: 32
+  requests: 1000000
+  keyspacelen: 1000000
+  clients: 100
+  size: 128
+  flavour: c1m1

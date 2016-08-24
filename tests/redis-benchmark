@@ -1,0 +1,14 @@
+#!/bin/bash
+# - tests
+# - flavour
+
+## Redis includes the redis-benchmark utility that simulates running commands done by N clients at
+## the same time sending M total queries (it is similar to the Apache's ab utility).
+## Below you'll find the full output of a benchmark executed against a Linux box.
+
+tests="${tests//+/,}"
+
+cmd="redis-benchmark -h $hostname -p $port -t $tests -P $pipeline -n $requests -r $keyspacelen -c $clients -d $size --csv"
+
+echo "$(date +'%F %T') ${cmd}" | tee -a $RESULT_ROOT/reproduce.sh
+${cmd}
