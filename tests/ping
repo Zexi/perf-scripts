@@ -11,4 +11,7 @@
 [ -n "$count" ] || count=5
 [ "$host" ] || host=www.baidu.com
 
+# first ping 3 times to reduce connect influence
+ping -c 3 $host > /dev/null
+
 cmd ping -c $count $host

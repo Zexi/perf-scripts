@@ -1,4 +1,17 @@
-#!/bin/sh
+#!/usr/bin/env python
 
-avg_time=`tail -1 | awk '{print $4}' | cut -d '/' -f 2`
-echo "avg_time: $avg_time"
+import sys
+import re
+
+
+for line in sys.stdin:
+    pkt_loss_m = re.search(r'.*(\d+)% packet loss.*', line)
+    res_line_m = re.search(r'rtt min/avg/max/mdev = (\d+.\d+)/(\d+.\d+)/(\d+.\d+).*', line)
+    if pkt_loss_m:
+        # system will pass 0 stats result, add 0.0001 to jump it
+        print('packet_loss: %s' % (float(pkt_loss_m.group(1))+0.0001))
+    if res_line_m:
+        print('min_time: %s' % res_line_m.group(1))
+        print('avg_time: %s' % res_line_m.group(2))
+        print('max_time: %s' % res_line_m.group(3))
+
