@@ -1,0 +1,6 @@
+testcase: tcp-con-lat
+
+tcp-con-lat:
+  addr: 172.16.30.140
+  port_count: 20
+  running_type: keep_arp_cache

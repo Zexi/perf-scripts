@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+
+import sys
+import os
+import re
+
+for line in sys.stdin:
+    unkonw_m = re.search(r'unknow ([\d.]+)', line)
+    connected_m = re.search(r'connected ([\d.]+)', line)
+    refused_m = re.search(r'refused ([\d.]+)', line)
+    if unkonw_m:
+        print("unkonw_time: %s" % unkonw_m.group(1))
+    if connected_m:
+        print("connected_time: %s" % connected_m.group(1))
+    if refused_m:
+        print("refused_time: %s" % refused_m.group(1))

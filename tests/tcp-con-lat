@@ -1,0 +1,10 @@
+#!/bin/bash
+# - addr
+# - port_count
+# - running_type
+
+[[ "$type" == "drop_arp_cache" ]] && arp -d $addr
+cmd="python $(dirname $0)/$testcase.py $addr $port_count"
+
+echo "$(date +'%F %T') ${cmd}" | tee -a $RESULT_ROOT/reproduce.sh
+exec $cmd
