@@ -101,4 +101,11 @@ subprocess.call(job_script + ' extract_stats', shell=True)
 job.save(result_root + '/job.yaml')
 
 if opt_upload_url:
-    subprocess.call(SRC + '/bin/upload' + ' ' + opt_upload_url + ' ' + result_root, shell=True)
+    try:
+        subprocess.check_call(SRC + '/bin/upload' + ' ' + opt_upload_url + ' ' + result_root, shell=True)
+    except subprocess.CalledProcessError, ex:
+        print(
+            "FAIL: Run command: %s"
+            "message: %s\nreturncode: %s\n output: %s\n"
+            % (ex.cmd, ex.message, ex.returncode, ex.output))
+        sys.exit(1)

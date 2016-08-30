@@ -1,0 +1,15 @@
+{% extends "main.html" %}
+
+{% block header %}
+  <h1>{{ header_text }}</h1>
+{% end %}
+
+{% block body %}
+  <h1>Welcome to Testbox monitor site!</h1>
+  <div id="hello">
+    {% for job in test_env.runjobs %}
+    	<p>{{job}}</p>
+    {% end %}
+    <p>...</p>
+  </div>
+{% end %}

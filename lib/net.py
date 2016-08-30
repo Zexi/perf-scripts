@@ -11,7 +11,11 @@ def upload(url, _files, arguments={}):
     files = {}
     for _file in _files:
         files[os.path.basename(_file)] = open(_file, 'r')
-    return requests.post(url, files=files, data=arguments)
+    try:
+        return requests.post(url, files=files, data=arguments)
+    except requests.exceptions.RequestException as e:
+        print e
+        sys.exit(1)
 
 def get_job_post_arguments(jobfile):
     job_post_arguments = {}
@@ -24,7 +28,7 @@ def get_job_post_arguments(jobfile):
     job_post_arguments['start_time'] = job_obj['start_time']
     job_post_arguments['testcase'] = job_obj['testcase']
     job_post_arguments['job_params'] = job_obj['job_params']
-    
+
     return job_post_arguments
 
 def post_job(url, _files, jobfile):
