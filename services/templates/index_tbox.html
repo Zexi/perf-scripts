@@ -1,4 +1,4 @@
-{% extends "main.html" %}
+{% extends "main_tbox.html" %}
 
 {% block header %}
   <h1>{{ header_text }}</h1>
@@ -9,7 +9,7 @@
   <div id="hello">
     {% for test_env in test_env_list %}
       {% for job in test_env.runjobs %}
-        <p>{{job}}</p>
+      	  <p>{{job}}</p>
       {% end %}
     {% end %}
     <p>...</p>

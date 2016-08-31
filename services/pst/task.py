@@ -9,7 +9,7 @@ import common
 
 MAX_WORKERS = 4
 TIMEFORMAT = '%Y-%m-%d-%X'
-PST_SRC = os.getenv('PST_SRC', common.parent_dir(os.path.abspath(__file__), 3))
+PST_SRC = os.getenv('PST_SRC', common.PST_SRC)
 
 logger = logging.getLogger(__name__)
 

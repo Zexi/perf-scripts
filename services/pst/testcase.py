@@ -2,7 +2,7 @@ import os
 import logging
 import common
 
-PST_SRC = os.getenv('PST_SRC', common.parent_dir(os.path.abspath(__file__), 3))
+PST_SRC = os.getenv('PST_SRC', common.PST_SRC)
 CYCLIC_PATH = PST_SRC + '/workspace/cyclic-jobs'
 TMP_PATH = PST_SRC + '/workspace/tmp'
 logger = logging.getLogger(__name__)

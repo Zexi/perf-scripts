@@ -29,7 +29,7 @@ class SSLSMTPHandler(SMTPHandler):
             smtp = smtplib.SMTP_SSL(self.mailhost, port, timeout=self._timeout)
             msg = self.format(record)
             msg = MIMEText(msg, 'plain', 'utf-8')
-            msg['From'] = self._format_addr(u'PSTbox Robot <%s>'
+            msg['From'] = self._format_addr(u'PSTest Robot <%s>'
                                             % self.fromaddr)
             msg['To'] = self._format_addr(",".join(self.toaddrs))
             msg['Subject'] = Header(u'%s' %
@@ -51,10 +51,11 @@ os.environ['COLOREDLOGS_LOG_FORMAT'] = \
 coloredlogs.install(level='DEBUG')
 logger = logging.getLogger()
 
-mailuser = os.environ.get('PSTBOX_MAIL_USER', None)
-mailpasswd = os.environ.get('PSTBOX_MAIL_PASSWD', None)
-smtpserver = os.environ.get('PSTBOX_MAIL_SMTP', None)
-toaddrs = os.environ.get('PSTBOX_MAIL_TOADDRS', None)
+mailuser = os.environ.get('PST_MAIL_USER', None)
+mailpasswd = os.environ.get('PST_MAIL_PASSWD', None)
+smtpserver = os.environ.get('PST_MAIL_SMTP', None)
+toaddrs = os.environ.get('PST_MAIL_TOADDRS', None)
+subject = os.environ.get('PST_MAIL_SUBJECT', u"[PST][log]")
 
 if mailuser and mailpasswd and smtpserver:
     hostname = common.get_hostname()
@@ -62,7 +63,7 @@ if mailuser and mailpasswd and smtpserver:
     commit = common.get_commit()
     if common.is_in_vm():
         tbox_type = 'vm'
-    elif common.is_in_docer():
+    elif common.is_in_docker():
         tbox_type = 'docker'
     else:
         tbox_type = 'pm'
@@ -70,7 +71,7 @@ if mailuser and mailpasswd and smtpserver:
     mail_handler = SSLSMTPHandler(mailhost=(smtpserver, 465),
                                   fromaddr=mailuser,
                                   toaddrs=toaddrs,
-                                  subject=u"[PSTbox][log]"+subject_suffix,
+                                  subject=subject+subject_suffix,
                                   credentials=(mailuser, mailpasswd))
 
     mail_handler.setLevel(logging.ERROR)

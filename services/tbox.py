@@ -10,11 +10,11 @@ import tornado.options
 
 from tornado.options import define, options
 
-from pstbox import common
-from pstbox.testcase import TestEnv
-from pstbox.task import TaskManager
+from pst import common
+from pst.testcase import TestEnv
+from pst.task import TaskManager
 
-PST_SRC = os.getenv('PST_SRC', common.parent_dir(os.path.abspath(__file__), 2))
+PST_SRC = os.getenv('PST_SRC', common.PST_SRC)
 define("port", default=8686, help="run on the given port", type=int)
 define("run_job_files", default=[PST_SRC+'/etc/autorun_conf.yaml'],
        multiple=True, help="specify run jos' files")
@@ -38,7 +38,7 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         test_env_list = self.application.test_env_list
         self.render(
-            'index.html',
+            'index_tbox.html',
             page_title="Pstbox | Home",
             header_text="All running testcase",
             test_env_list=test_env_list
@@ -58,6 +58,7 @@ def main():
     tornado.ioloop.IOLoop.current().start()
 
 if __name__ == "__main__":
-    import pstbox.manlog
-    logger = pstbox.manlog.logger
+    os.environ['PST_MAIL_SUBJECT'] = u"[PST Testbox][log]"
+    import pst.manlog
+    logger = pst.manlog.logger
     main()

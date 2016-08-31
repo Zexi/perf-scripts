@@ -2,7 +2,7 @@ pst_server:
   port: 8080
 
 influxdb:
-  ip: 192.168.99.100
+  ip: 127.0.0.1
   port: 8086
   user: root
   pass: root

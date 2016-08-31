@@ -6,7 +6,28 @@ import yaml
 import json
 import shutil
 import collections
+import tarfile
+import tempfile
 import subprocess
+import pytz
+from datetime import datetime
+
+
+def unify_time(tz):
+    timezone = pytz.timezone(tz)
+    return timezone.normalize(
+        pytz.utc.localize(datetime.utcnow()).astimezone(timezone))
+
+
+def get_time(tz='Asia/Shanghai'):
+    return unify_time(tz).strftime('%Y-%m-%d %H:%M:%S')
+
+
+def unify_localtime(tz='Asia/Shanghai'):
+    localtime = '/etc/localtime'
+    if tz not in os.path.realpath(localtime):
+        os.remove(localtime)
+        os.symlink('/usr/share/zoneinfo/' + tz, localtime)
 
 
 def dot_file(path):
@@ -20,6 +41,22 @@ def get_filepaths(directory):
             filepath = os.path.join(root, filename)
             file_paths.append(filepath)
     return file_paths
+
+
+def create_tar_gz(directory):
+    file_paths = get_filepaths(directory)
+    tar = tarfile.open(tempfile.mktemp(
+        prefix="pst-", suffix=".tar.gz"), "w:gz")
+    for path in file_paths:
+        tar.add(path)
+    tar.close()
+    return tar.name
+
+
+def extract_tar_gz(src, dst):
+    tar = tarfile.open(src)
+    tar.extractall(dst)
+    tar.close()
 
 
 def load_json(file_path):
@@ -87,7 +124,7 @@ def parent_dir(path, steps=0):
         parent_dir = dirname(parent_dir)
     return parent_dir
 
-PST_SRC = parent_dir(os.path.abspath(__file__), 3)
+PST_SRC = parent_dir(os.path.abspath(__file__), 2)
 
 
 def get_rootfs():
@@ -99,6 +136,8 @@ def get_rootfs():
 def is_in_docker():
     check_file = "/proc/self/cgroup"
     in_docker = False
+    if not os.path.exists(check_file):
+        return in_docker
     with open(check_file) as f:
         for line in f:
             if line.split('/')[1] == 'docker':
@@ -115,3 +154,35 @@ def is_in_vm():
         return False
     else:
         return True
+
+
+def get_cpu_info():
+    cmd = 'cat /proc/cpuinfo'
+    cpu_hash = {}
+    for line in [line.split(':') for line
+                 in run_cmd(cmd, shell=True).strip().split("\n") if line]:
+        k, v = line
+        cpu_hash[k.replace('\t', '')] = v
+    return cpu_hash
+
+
+def get_mem_size():
+    if is_in_docker():
+        check_file = '/sys/fs/cgroup/memory/memory.limit_in_bytes'
+        kB = int(open(check_file, 'r').readline().strip()) / 1024
+    else:
+        cmd = "grep MemTotal /proc/meminfo | awk '{print $2}'"
+        kB = int(subprocess.check_output(cmd, shell=True).strip())
+    return kB
+
+
+def remove_res_point_arr(res):
+    for k, v in res.iteritems():
+        if isinstance(v[0], basestring):
+            res[k] = v[0]
+            continue
+        v = [float(x) for x in v]
+        if len(v) > 3:
+            v.remove(min(v))
+            v.remove(max(v))
+        res[k] = sum(v) / len(v)
