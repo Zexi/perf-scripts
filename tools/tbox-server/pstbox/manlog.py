@@ -46,8 +46,8 @@ class SSLSMTPHandler(SMTPHandler):
 
 
 os.environ['COLOREDLOGS_LOG_FORMAT'] = \
-        '[%(hostname)s] %(asctime)s - %(filename)s[line:%(lineno)d]' \
-        ' - %(levelname)s - %(message)s'
+        '[%(hostname)s] %(asctime)s - %(name)s - ' \
+        '%(filename)s[line:%(lineno)d] - %(levelname)-8s: %(message)s'
 coloredlogs.install(level='DEBUG')
 logger = logging.getLogger()
 

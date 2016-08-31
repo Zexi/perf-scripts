@@ -55,9 +55,9 @@ def create_dir(path):
 
 def run_cmd(cmd, shell=False):
     import logging
-    logger = logging.getLogger()
+    logger = logging.getLogger(__name__)
     try:
-        logging.info("Run command: %s" % cmd)
+        logger.info("Run command: %s" % cmd)
         res = subprocess.check_output(
             cmd, stderr=subprocess.STDOUT, shell=shell)
         return res
