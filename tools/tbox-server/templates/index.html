@@ -7,8 +7,10 @@
 {% block body %}
   <h1>Welcome to Testbox monitor site!</h1>
   <div id="hello">
-    {% for job in test_env.runjobs %}
-    	<p>{{job}}</p>
+    {% for test_env in test_env_list %}
+      {% for job in test_env.runjobs %}
+        <p>{{job}}</p>
+      {% end %}
     {% end %}
     <p>...</p>
   </div>
