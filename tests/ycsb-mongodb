@@ -1,0 +1,27 @@
+#!/bin/sh
+# - dbname
+# - host
+# - flavour
+# - workloads
+
+cd $BENCHMARK_ROOT/ycsb-$ycsbversion
+
+: ${host:="localhost"}
+: ${port:="27017"}
+: ${database:="ycsb"}
+: ${writeConcern:="normal"}
+: ${recordcount:="1000000"}
+: ${operationcount:="1000000"}
+
+url="$host:$port/$database"
+
+# first drop database
+pre_cmd="mongo "$url" --eval \"db.dropDatabase()\""
+# run bin/ycsb load
+load_cmd="bin/ycsb load mongodb -s -P workloads/$workloads -threads $threads -p recordcount=$recordcount -p operationcount=$operationcount -p mongodb.url=mongodb://$host:$port -p mongodb.writeConcern=$writeConcern"
+run_cmd="bin/ycsb run mongodb -s -P workloads/$workloads -threads $threads -p operationcount=$operationcount -p operationcount=$operationcount -p mongodb.url=mongodb://$host:$port -p mongodb.writeConcern=$writeConcern"
+
+for cmd in "$pre_cmd" "$load_cmd" "$run_cmd"; do
+    echo "$(date +'%F %T') ${cmd}" | tee -a $RESULT_ROOT/reproduce.sh
+    eval ${cmd}
+done

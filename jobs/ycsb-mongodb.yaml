@@ -1,0 +1,14 @@
+testcase: ycsb
+
+ycsb-mongodb:
+  host: 192.168.59.3
+  port: 27017
+  writeConcern: normal
+  recordcount: 1000000
+  operationcount: 1000000
+  threads: 100
+  flavour: c1m1
+  workloads: workloada
+  ycsbversion: 0.10.0
+  database: ycsb
+  dbname: mongodb

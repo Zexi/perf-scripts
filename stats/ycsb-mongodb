@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+
+import sys
+import re
+
+overall_count = 0
+for line in sys.stdin:
+    overall_thr_m = re.search(r'\[OVERALL\], Throughput\(ops/sec\), (\d+.\d+)', line)
+
+    insert_minlat_m = re.search(r'\[INSERT\], MinLatency\(us\), (\d+.\d+)', line)
+    insert_avglat_m = re.search(r'\[INSERT\], AverageLatency\(us\), (\d+.\d+)', line)
+    insert_maxlat_m = re.search(r'\[INSERT\], MaxLatency\(us\), (\d+.\d+)', line)
+
+    read_minlat_m = re.search(r'\[READ\], MinLatency\(us\), (\d+.\d+)', line)
+    read_avglat_m = re.search(r'\[READ\], AverageLatency\(us\), (\d+.\d+)', line)
+    read_maxlat_m = re.search(r'\[READ\], MaxLatency\(us\), (\d+.\d+)', line)
+
+    update_minlat_m = re.search(r'\[UPDATE\], MinLatency\(us\), (\d+.\d+)', line)
+    update_avglat_m = re.search(r'\[UPDATE\], AverageLatency\(us\), (\d+.\d+)', line)
+    update_maxlat_m = re.search(r'\[UPDATE\], MaxLatency\(us\), (\d+.\d+)', line)
+
+    if overall_thr_m:
+        if overall_count == 0:
+            print('insert.throughput: %s' % overall_thr_m.group(1))
+        if overall_count == 1:
+            print('read.update.throughput: %s' % overall_thr_m.group(1))
+        overall_count += 1
+
+    if insert_minlat_m:
+        print('insert.minlat: %s' % insert_minlat_m.group(1))
+    if insert_avglat_m:
+        print('insert.avglat: %s' % insert_avglat_m.group(1))
+    if insert_maxlat_m:
+        print('insert.maxlat: %s' % insert_maxlat_m.group(1))
+
+    if read_minlat_m:
+        print('read.minlat: %s' % read_minlat_m.group(1))
+    if read_avglat_m:
+        print('read.avglat: %s' % read_avglat_m.group(1))
+    if read_maxlat_m:
+        print('read.maxlat: %s' % read_maxlat_m.group(1))
+
+    if update_minlat_m:
+        print('update.minlat: %s' % update_minlat_m.group(1))
+    if update_avglat_m:
+        print('update.avglat: %s' % update_avglat_m.group(1))
+    if update_maxlat_m:
+        print('update.maxlat: %s' % update_maxlat_m.group(1))
