@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test results layout example - UIkit documentation</title>
+  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon-precomposed" href="images/apple-touch-icon.png">
+  <link rel="stylesheet" href="/static/css/uikit.min.css">
+  <link rel="stylesheet" href="/static/css/uikit.gradient.min.css">
+  <link rel="stylesheet" href="/static/css/awesome.css" />
+  <script src="{{ static_url("js/jquery.js") }}"></script>
+  <script src="{{ static_url("js/uikit.min.js") }}"></script>
+</head>
+<body>
+  <div class="uk-grid" data-uk-grid-margin>
+    <div class="uk-width-1-1">
+      <h1 class="uk-heading-large">Test results</h1>
+      <p class="uk-text-large">
+      Each testcase results display.
+      </p>
+    </div>
+  </div>
+  <div class="uk-grid" data-uk-grid-margin>
+    <div class="uk-width-1-1">
+      <ul class="uk-subnav uk-subnav-pill" data-uk-switcher="{connect:'#switcher-content'}">
+        {% block testcasename %}{% end %}
+      </ul>
+      <ul id="switcher-content" class="uk-switcher">
+        {% block pictures %}{% end %}
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

@@ -11,8 +11,8 @@ import tornado.options
 from tornado.options import define, options
 
 from pst import common
-from pst.testcase import TestEnv
-from pst.task import TaskManager
+from tboxs.testcase import TestEnv
+from tboxs.task import TaskManager
 
 PST_SRC = os.getenv('PST_SRC', common.PST_SRC)
 define("port", default=8686, help="run on the given port", type=int)
@@ -26,8 +26,8 @@ class Application(tornado.web.Application):
             (r'/', MainHandler),
         ]
         settings = dict(
-            template_path=os.path.join(os.path.dirname(__file__), 'templates'),
-            static_path=os.path.join(os.path.dirname(__file__), 'static'),
+            template_path=os.path.join(os.path.dirname(__file__), 'tboxs/templates'),
+            static_path=os.path.join(os.path.dirname(__file__), 'tboxs/static'),
             debug=True,)
         self.test_env_list = [TestEnv(run_job_file) for run_job_file
                               in options.run_job_files]
@@ -38,7 +38,7 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         test_env_list = self.application.test_env_list
         self.render(
-            'index_tbox.html',
+            'index.html',
             page_title="Pstbox | Home",
             header_text="All running testcase",
             test_env_list=test_env_list

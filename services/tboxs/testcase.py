@@ -1,6 +1,7 @@
 import os
 import logging
-import common
+
+from pst import common
 
 PST_SRC = os.getenv('PST_SRC', common.PST_SRC)
 CYCLIC_PATH = PST_SRC + '/workspace/cyclic-jobs'

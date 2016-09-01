@@ -5,7 +5,7 @@ from tornado.ioloop import IOLoop
 from tornado import gen
 from tornado.concurrent import run_on_executor, futures
 
-import common
+from pst import common
 
 MAX_WORKERS = 4
 TIMEFORMAT = '%Y-%m-%d-%X'
