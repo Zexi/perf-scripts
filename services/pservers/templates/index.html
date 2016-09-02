@@ -1,14 +1,9 @@
-{% extends "main.html" %}
-
-{% block testcasename %}
-  <li class="uk-active">
-    <a href="#">All</a>
-  </li>
-  {% for i in pics_dict.keys() %}
-    {% module Item(i) %}
-  {% end %}
-{% end %}
-
-{% block pictures %}
-  {% module PicContent(pics_dict) %}
-{% end %}
+<html>
+  <head>
+    <title>Welcome Back!</title>
+  </head>
+  <body>
+    <h1>Welcome, {{ current_user }}<h1>
+        <a href="/logout">logout</a>
+  </body>
+</html>

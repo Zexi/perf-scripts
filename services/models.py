@@ -7,7 +7,6 @@ import uuid
 from motorengine.document import Document
 from motorengine.fields import StringField, ListField, BooleanField
 
-from fields import PsDateTimeField as DateTimeField
 from pst.secrets import token_urlsafe
 
 
@@ -17,8 +16,8 @@ class TestBox(Document):
     box_id = StringField(required=True, default=lambda: uuid.uuid4().hex)
     hostname = StringField(required=True, max_length=200)
     password = StringField(required=True, max_length=200)
-    created_at = DateTimeField(required=True)
-    updated_at = DateTimeField(default=datetime.datetime.now)
+    created_at = StringField(default=datetime.datetime.now().isoformat)
+    updated_at = StringField(default=datetime.datetime.now().isoformat)
     status = StringField(default='registered')
     tags = ListField(StringField(max_length=50))
 

@@ -35,6 +35,8 @@ class PServerApp(Application):
     def __init__(self, api_routes, db_conn=None, generate_docs=False):
         routes = [
                 (r"/", handlers.IndexHandler),
+                (r"/login", handlers.LoginHandler),
+                (r"/logout", handlers.LogoutHandler),
                 (r"/results$", handlers.ResultsHandler),
                 (r"/results/([\w-]+$)", handlers.ResultsHandler)
         ]
@@ -53,7 +55,10 @@ class PServerApp(Application):
                     'PicContent': modules.PicContentModule,
                     'Pic': modules.PicModule,
                 },
-                debug=True,)
+                cookie_secret='AG3oA/P0THOoHbRweDqx1mSGVsh3NULNqwfeFsxNQHg=',
+                login_url='/login',
+                debug=True,
+        )
         self.influxdb_client = influxdb_pst.conn(INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASS, INFLUXDB_DBNAME)
         influxdb_pst.create_db(self.influxdb_client, INFLUXDB_DBNAME)
         super(PServerApp, self).__init__(routes, settings, db_conn, generate_docs)
