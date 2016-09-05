@@ -46,11 +46,15 @@ class TaskRunner(object):
         except Exception:
             job.status = 'failed'
 
+    def reload_sleep(self):
+        self.test_env.reload()
+        self.int_runtime = int(self.test_env.int_runtime)
+        time.sleep(self.int_runtime)
+
     @run_on_executor
     def per_func(self):
         while True:
-            self.test_env.reload()
-            time.sleep(self.int_runtime)
+            self.reload_sleep()
             for testjob in self.test_env.runjobs:
                 logger.info("%s====" % testjob)
                 self.run_one_job(testjob)
