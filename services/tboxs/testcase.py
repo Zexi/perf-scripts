@@ -44,8 +44,6 @@ class TestEnv(object):
     def __init__(self, run_job_file):
         self._load_runjobs(run_job_file)
         self._get_boxid()
-        # generate self.runjobs
-        self._gen_testjobs(self.runjobs_conf.get('jobs', []))
 
     def _get_boxid(self):
         param = {'hostname': self.testbox, 'password': self.password}
@@ -102,6 +100,8 @@ class TestEnv(object):
     def reload(self):
         print("=====================TestEnv relaod===============")
         self._load_runjobs(self.conf_file)
+        # generate self.runjobs
+        self._gen_testjobs(self.runjobs_conf.get('jobs', []))
 
     @property
     def upload_url(self):

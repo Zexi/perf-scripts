@@ -50,10 +50,10 @@ class TaskRunner(object):
     def per_func(self):
         while True:
             time.sleep(self.int_runtime)
+            self.test_env.reload()
             for testjob in self.test_env.runjobs:
                 logger.info("%s====" % testjob)
                 self.run_one_job(testjob)
-            self.test_env.reload()
 
     @gen.coroutine
     def start(self):
