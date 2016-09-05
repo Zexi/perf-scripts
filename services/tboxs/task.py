@@ -49,8 +49,8 @@ class TaskRunner(object):
     @run_on_executor
     def per_func(self):
         while True:
-            time.sleep(self.int_runtime)
             self.test_env.reload()
+            time.sleep(self.int_runtime)
             for testjob in self.test_env.runjobs:
                 logger.info("%s====" % testjob)
                 self.run_one_job(testjob)
