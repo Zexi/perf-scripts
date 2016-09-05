@@ -5,6 +5,7 @@ from tornado.concurrent import run_on_executor, futures
 
 from pst import common
 from pst import result
+from pservers.models import User
 
 MAX_WORKERS = 4
 PST_SRC = os.getenv('PST_SRC', common.PST_SRC)
@@ -34,18 +35,22 @@ class LoginHandler(BaseHandler):
 
         username = tornado.escape.xhtml_escape(self.get_argument('username'))
         password = tornado.escape.xhtml_escape(self.get_argument('password'))
-        if "demo" == username and "demo" == password:
-            self.set_secure_cookie("username", self.get_argument("username"))
-            self.set_secure_cookie("incorrect", "0")
-            self.redirect('/')
-        else:
+        users = yield User.objects.limit(1).filter(name=username, password=password).find_all()
+        if not users or not users[0].is_admin:
+            self.set_status(401)
             incorrect = self.get_secure_cookie("incorrect") or 0
             increased = str(int(incorrect)+1)
-            self.set_secure_cookie("incorrect", increased)
+            self.set_secure_cookie("incorrect", increased, httponly=True)
             self.write('''<center>
                             Something Wrong With Your Data (%s)<br />
                             <a href="/">Go Home</a>
                           </center> ''' % increased)
+
+        else:
+            self.set_secure_cookie("username", self.get_argument("username"), httponly=True)
+            self.set_secure_cookie("Authorization", users[0].token)
+            self.set_secure_cookie("incorrect", "0", httponly=True)
+            self.redirect('/')
 
 
 class LogoutHandler(BaseHandler):
@@ -58,6 +63,12 @@ class IndexHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         self.render('index.html', user=self.current_user)
+
+
+class TestBoxesHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        self.render('testbox.html')
 
 
 class ResultsHandler(tornado.web.RequestHandler):

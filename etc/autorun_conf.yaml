@@ -2,10 +2,12 @@ runtime: 1
 
 server:
   hostname: 172.30.26.228
-  port: 8080
+  port: 18686
   res: results
 
 jobs:
+token: R5S31rzEM4rUyobhXSRYRA
+password: secretpasswd
 
 # config for test which should sync run
 sync:

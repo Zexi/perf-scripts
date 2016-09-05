@@ -19,6 +19,7 @@ PST_SRC = os.getenv('PST_SRC', common.PST_SRC)
 # load server config
 conf_dict = common.load_yaml(PST_SRC + '/etc/pst_server.yaml')
 server_port = str(conf_dict['pst_server']['port'])
+print "=============server port: %s" % server_port
 
 INFLUXDB_HOST = str(conf_dict['influxdb']['ip'])
 INFLUXDB_PORT = str(conf_dict['influxdb']['port'])
@@ -35,6 +36,7 @@ class PServerApp(Application):
     def __init__(self, api_routes, db_conn=None, generate_docs=False):
         routes = [
                 (r"/", handlers.IndexHandler),
+                (r"/testboxes", handlers.TestBoxesHandler),
                 (r"/login", handlers.LoginHandler),
                 (r"/logout", handlers.LogoutHandler),
                 (r"/results$", handlers.ResultsHandler),

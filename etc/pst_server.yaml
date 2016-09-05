@@ -1,5 +1,5 @@
 pst_server:
-  port: 8080
+  port: 18686
 
 influxdb:
   ip: 127.0.0.1

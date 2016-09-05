@@ -2,8 +2,9 @@
 <html dir="ltr">
 <head>
   <meta charset="UTF-8">
+  {% block meta %}<!-- block meta -->{% end %}
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Test results layout example - UIkit documentation</title>
+  <title>{% block title %} ? {% end %} - PServer</title>
   <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon-precomposed" href="images/apple-touch-icon.png">
   <link rel="stylesheet" href="/static/css/uikit.min.css">
@@ -11,24 +12,23 @@
   <link rel="stylesheet" href="/static/css/awesome.css" />
   <script src="{{ static_url("js/jquery.js") }}"></script>
   <script src="{{ static_url("js/uikit.min.js") }}"></script>
+  {% block beforehead %}<! -- before head -->{% end %}
 </head>
 <body>
-  <div class="uk-grid" data-uk-grid-margin>
-    <div class="uk-width-1-1">
-      <h1 class="uk-heading-large">Test results</h1>
-      <p class="uk-text-large">
-      Each testcase results display.
-      </p>
-    </div>
-  </div>
-  <div class="uk-grid" data-uk-grid-margin>
-    <div class="uk-width-1-1">
-      <ul class="uk-subnav uk-subnav-pill" data-uk-switcher="{connect:'#switcher-content'}">
-        {% block testcasename %}{% end %}
+  <div class="uk-container uk-container-center uk-margin-top uk-margin-large-bottom">
+    <nav class="uk-navbar uk-margin-large-bottom">
+      <a class="uk-navbar-brand uk-hidden-small" href=""></a>
+      <ul class-"uk-navbar-nav uk-hidden-small">
+        <li class="uk-active"><a href="/testboxes">TestBoxes</a></li>
+        <li><a href="#0"><i class="uk-icon-user"></i>{{ current_user }}</a></li>
+        <li><a href="/logout">LogOut</li>
       </ul>
-      <ul id="switcher-content" class="uk-switcher">
-        {% block pictures %}{% end %}
-      </ul>
+    </nav>
+
+  <div class="uk-container uk-container-center">
+    <div class="uk-grid">
+      {% block content %}
+      {% end %}
     </div>
   </div>
 </body>

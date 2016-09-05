@@ -1,9 +1,13 @@
-<html>
-  <head>
-    <title>Welcome Back!</title>
-  </head>
-  <body>
-    <h1>Welcome, {{ current_user }}<h1>
-        <a href="/logout">logout</a>
-  </body>
-</html>
+{% extends 'main.html' %}
+
+{% block title %}Main Page{% end %}
+
+{% block beforehead %}
+<script>
+</script>
+{% end %}
+
+{% block content %}
+  <h1>Welcome, {{ current_user }}<h1>
+  <a href="/logout">logout</a>
+{% end %}

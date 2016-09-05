@@ -1,5 +1,7 @@
 import os
 import logging
+import requests
+import json
 
 from pst import common
 
@@ -10,10 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 class TestJob(object):
-    def __init__(self, job_file, status='init'):
+    def __init__(self, job_file,
+                 testbox=common.get_hostname(),
+                 password=None, token=None,
+                 boxid=None, status='init'):
         self.job_file = job_file
         self.desc = dict()
         self._load_job_file(job_file)
+        self.testbox = testbox
+        self.password = password
+        self.token = token
+        self.boxid = boxid
         self.status = status
 
     def _load_job_file(self, job_file):
@@ -22,7 +31,6 @@ class TestJob(object):
         self.name = self.desc.get('testcase', None)
         self.job_params = self.desc.get('job_params', None)
         self.unit_job = self.desc.get('unit_job', None)
-        self.testbox = self.desc.get('testbox', common.get_hostname())
         self.commit = self.desc.get('commit', common.get_commit())
         self.rootfs = self.desc.get('rootfs', common.get_rootfs())
 
@@ -35,6 +43,16 @@ class TestJob(object):
 class TestEnv(object):
     def __init__(self, run_job_file):
         self._load_runjobs(run_job_file)
+        self._get_boxid()
+        # generate self.runjobs
+        self._gen_testjobs(self.runjobs_conf.get('jobs', []))
+
+    def _get_boxid(self):
+        param = {'hostname': self.testbox, 'password': self.password}
+        self.pserver_url = 'http://%s:%s/api/testboxes' % (self.pst_server, self.pst_server_port)
+        response = requests.post(self.pserver_url, data=param, headers={'Authorization': self.token})
+        response.raise_for_status()
+        self.boxid = json.loads(response.content)['data']['box_id']
 
     def _load_runjobs(self, file_path):
         self.conf_file = file_path
@@ -43,10 +61,11 @@ class TestEnv(object):
         self.pst_server = self.runjobs_conf.get('server').get('hostname')
         self.pst_server_port = self.runjobs_conf.get('server').get('port')
         self.pst_server_res = self.runjobs_conf.get('server').get('res')
+        self.testbox = common.get_hostname()
+        self.password = self.runjobs_conf.get('password', '')
+        self.token = self.runjobs_conf.get('token', '')
         self.int_runtime = self.runjobs_conf.get('runtime')
         self.runjobs_sync_dir = self.runjobs_conf.get('sync').get('dir')
-        # generate self.runjobs
-        self._gen_testjobs(self.runjobs_conf.get('jobs', []))
 
     def _on_gen_testjobs(self, source, data):
         data = data.decode().strip()
@@ -71,15 +90,14 @@ class TestEnv(object):
         split_cmd.append("-o")
         split_cmd.append(CYCLIC_PATH)
         logger.info('(_gen_testjobs: %s)' % split_cmd)
-#        AASubprocess(split_cmd, -1, partial(self._on_gen_testjobs, 'out'),
-#                     partial(self._on_gen_testjobs, 'err'), None, None)
-
         data = common.run_cmd(split_cmd)
         logger.info('Split Job Success : %s' % data)
         split_jobs = [split_file.split(' => ')[1] for split_file
                       in data.split('\n') if split_file]
-        self.runjobs = [TestJob(job_file, 'splited') for job_file
-                        in split_jobs]
+        kvargs = {'testbox': self.testbox, 'password': self.password,
+                  'token': self.token, 'boxid': self.boxid,
+                  'status': 'splited'}
+        self.runjobs = [TestJob(job_file, **kvargs) for job_file in split_jobs]
 
     def reload(self):
         print("=====================TestEnv relaod===============")
@@ -94,3 +112,6 @@ class TestEnv(object):
     @upload_url.setter
     def upload_url(self, hostname, port, res):
         self._upload_url = 'http://%s:%s/%s' % (hostname, port, res)
+
+    def upload_job_status(self):
+        pass
