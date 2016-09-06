@@ -52,8 +52,8 @@ def main():
     tornado.options.parse_command_line()
     app = Application()
     _default_testenv_list = app.test_env_list
-    http_server = tornado.httpserver.HTTPServer(app)
-    http_server.listen(options.port)
+#    http_server = tornado.httpserver.HTTPServer(app)
+#    http_server.listen(options.port)
     TaskManager(_default_testenv_list).start()
     tornado.ioloop.IOLoop.current().start()
 
