@@ -33,18 +33,22 @@ class TaskRunner(object):
             job.status = 'failed'
 
     def run_one_job(self, job):
+        upload_url = self.test_env.upload_url
         job.status = 'running'
+        job.upload_info()
         run_cmd = [PST_SRC+'/bin/pst', 'run', '-j', job.job_file,
-                   '-u', self.test_env.upload_url]
+                   '-u', upload_url]
         logger.info("(run_one_job: %s)" % run_cmd)
         try:
             job.start_time = time.strftime(TIMEFORMAT, time.localtime())
             common.run_cmd(run_cmd)
             job.status = 'finished'
+            job.upload_info()
             logger.info("Finish run_one_job: %s, remove it" % job.job_file)
             os.remove(job.job_file)
         except Exception:
             job.status = 'failed'
+            job.upload_info()
 
     def reload_sleep(self):
         self.test_env.reload()

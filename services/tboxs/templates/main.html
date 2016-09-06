@@ -21,15 +21,7 @@
       </p>
     </div>
   </div>
-  <div class="uk-grid" data-uk-grid-margin>
-    <div class="uk-width-1-1">
-      <ul class="uk-subnav uk-subnav-pill" data-uk-switcher="{connect:'#switcher-content'}">
-        {% block testcasename %}{% end %}
-      </ul>
-      <ul id="switcher-content" class="uk-switcher">
-        {% block pictures %}{% end %}
-      </ul>
-    </div>
-  </div>
+  {% block body %}
+  {% end %}
 </body>
 </html>
