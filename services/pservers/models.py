@@ -5,7 +5,8 @@ import datetime
 import uuid
 
 from motorengine.document import Document
-from motorengine.fields import StringField, ListField, BooleanField
+from motorengine.fields import StringField, ListField, BooleanField, \
+        JsonField
 
 from fields import PsDateTimeField as DateTimeField
 from pst.secrets import token_urlsafe
@@ -20,6 +21,24 @@ class TestBox(Document):
     created_at = DateTimeField(required=True)
     updated_at = DateTimeField(default=datetime.datetime.now)
     status = StringField(default='registered')
+    tags = ListField(StringField(max_length=50))
+
+
+class TestJob(Document):
+    __collection__ = "testjobs"
+
+    job_id = StringField(required=True, default=lambda: uuid.uuid4().hex)
+    testcase = StringField(required=True)
+    job_params = StringField(required=True)
+    testbox = StringField(required=True)
+    rootfs = StringField(required=True)
+    commit = StringField(required=True)
+    boxid = StringField(required=True)
+    origin_desc = JsonField(required=True)
+    desc = JsonField(required=True)
+    created_at = DateTimeField(required=True)
+    updated_at = DateTimeField(default=datetime.datetime.now)
+    status = StringField(default='init')
     tags = ListField(StringField(max_length=50))
 
 

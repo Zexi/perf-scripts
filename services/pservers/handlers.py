@@ -96,12 +96,6 @@ class TestBoxesHandler(BaseHandler):
 class ResultsHandler(BaseHandler):
     executor = futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
 
-    def get(self, testcase_name=None):
-        if testcase_name:
-            pass
-        else:
-            pass
-
     @coroutine
     def post(self):
         files = self.request.files
