@@ -1,4 +1,6 @@
 import os
+import logging
+import traceback
 import tornado.web
 from tornado import gen
 from tornado.concurrent import run_on_executor, futures
@@ -6,6 +8,8 @@ from tornado.concurrent import run_on_executor, futures
 from pst import common
 from pst import result
 from pservers.models import User
+
+logger = logging.getLogger(__name__)
 
 MAX_WORKERS = 4
 PST_SRC = os.getenv('PST_SRC', common.PST_SRC)
@@ -119,6 +123,11 @@ class ResultsHandler(tornado.web.RequestHandler):
 
             result_path = '%s/results/%s/%s' % (
                 WORKSPACE, testcase_prefix, start_time)
-            result.update_influxdb(
-                testcase, start_time, result_path,
-                influxdb_client, influxdb_tags)
+            try:
+                result.update_influxdb(
+                    testcase, start_time, result_path,
+                    influxdb_client, influxdb_tags)
+            except Exception:
+                tb = traceback.format_exc()
+                err_str = '%s\n%s' % (influxdb_tags, tb)
+                logger.error(err_str)
