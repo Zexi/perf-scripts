@@ -85,6 +85,11 @@ def load_yaml(file_path):
         return dic
 
 
+def save_yaml(conf_file, conf_dict):
+    with open(conf_file, 'w') as f:
+        f.write(yaml.dump(conf_dict, default_flow_style=False))
+
+
 def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path, 02775)
