@@ -1,7 +1,7 @@
 import os
 import logging
 import tornado.web
-from tornado import gen
+from tornado.gen import coroutine
 from tornado.web import traceback
 from tornado.concurrent import run_on_executor, futures
 
@@ -16,35 +16,31 @@ PST_SRC = os.getenv('PST_SRC', common.PST_SRC)
 WORKSPACE = PST_SRC + '/workspace'
 
 
-def write_error(self, status_code, **kwargs):
-    self.set_status(status_code)
-    if self.settings.get("serve_traceback") and "exc_info" in kwargs:
-        # in debug mode, try to send a traceback
-        self.set_header('Content-Type', 'text/plain')
-        for line in traceback.format_exception(*kwargs["exc_info"]):
-            self.write(line)
-        self.finish()
-    else:
-        if 404 == status_code:
-            self.render('404.html')
-        else:
-            self.finish("<html><title>%(code)d: %(message)s</title>"
-                        "<body>%(code)d: %(message)s</body></html>" % {
-                            "code": status_code,
-                            "message": self._reason,
-                        })
-
-
-setattr(tornado.web.RequestHandler, 'write_error', write_error)
-
-
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         return self.get_secure_cookie("username")
 
+    def write_error(self, status_code, **kwargs):
+        self.set_status(status_code)
+        if self.settings.get("serve_traceback") and "exc_info" in kwargs:
+            # in debug mode, try to send a traceback
+            self.set_header('Content-Type', 'text/plain')
+            for line in traceback.format_exception(*kwargs["exc_info"]):
+                self.write(line)
+            self.finish()
+        else:
+            if 404 == status_code:
+                self.render('404.html')
+            else:
+                self.finish("<html><title>%(code)d: %(message)s</title>"
+                            "<body>%(code)d: %(message)s</body></html>" % {
+                                "code": status_code,
+                                "message": self._reason,
+                            })
+
 
 class LoginHandler(BaseHandler):
-    @gen.coroutine
+    @coroutine
     def get(self):
         incorrect = self.get_secure_cookie("incorrect")
         if incorrect and int(incorrect) > 20:
@@ -52,7 +48,7 @@ class LoginHandler(BaseHandler):
             return
         self.render('login.html')
 
-    @gen.coroutine
+    @coroutine
     def post(self):
         incorrect = self.get_secure_cookie('incorrect')
         if incorrect and int(incorrect) > 20:
@@ -97,7 +93,7 @@ class TestBoxesHandler(BaseHandler):
         self.render('testbox.html')
 
 
-class ResultsHandler(tornado.web.RequestHandler):
+class ResultsHandler(BaseHandler):
     executor = futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
 
     def get(self, testcase_name=None):
@@ -106,7 +102,7 @@ class ResultsHandler(tornado.web.RequestHandler):
         else:
             pass
 
-    @gen.coroutine
+    @coroutine
     def post(self):
         files = self.request.files
         testbox = self.get_argument("testbox")
