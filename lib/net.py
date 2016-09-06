@@ -12,7 +12,8 @@ def upload(url, _files, arguments={}):
     for _file in _files:
         files[os.path.basename(_file)] = open(_file, 'r')
     try:
-        return requests.post(url, files=files, data=arguments)
+        res = requests.post(url, files=files, data=arguments)
+        res.raise_for_status()
     except requests.exceptions.RequestException as e:
         print e
         sys.exit(1)
@@ -33,5 +34,4 @@ def get_job_post_arguments(jobfile):
 
 def post_job(url, _files, jobfile):
     job_post_arguments = get_job_post_arguments(jobfile)
-    r = upload(url, _files, job_post_arguments)
-    print r.text
+    upload(url, _files, job_post_arguments)

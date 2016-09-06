@@ -1,8 +1,8 @@
 import os
 import logging
-import traceback
 import tornado.web
 from tornado import gen
+from tornado.web import traceback
 from tornado.concurrent import run_on_executor, futures
 
 from pst import common
@@ -14,6 +14,28 @@ logger = logging.getLogger(__name__)
 MAX_WORKERS = 4
 PST_SRC = os.getenv('PST_SRC', common.PST_SRC)
 WORKSPACE = PST_SRC + '/workspace'
+
+
+def write_error(self, status_code, **kwargs):
+    self.set_status(status_code)
+    if self.settings.get("serve_traceback") and "exc_info" in kwargs:
+        # in debug mode, try to send a traceback
+        self.set_header('Content-Type', 'text/plain')
+        for line in traceback.format_exception(*kwargs["exc_info"]):
+            self.write(line)
+        self.finish()
+    else:
+        if 404 == status_code:
+            self.render('404.html')
+        else:
+            self.finish("<html><title>%(code)d: %(message)s</title>"
+                        "<body>%(code)d: %(message)s</body></html>" % {
+                            "code": status_code,
+                            "message": self._reason,
+                        })
+
+
+setattr(tornado.web.RequestHandler, 'write_error', write_error)
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -131,3 +153,4 @@ class ResultsHandler(tornado.web.RequestHandler):
                 tb = traceback.format_exc()
                 err_str = '%s\n%s' % (influxdb_tags, tb)
                 logger.error(err_str)
+                self.write_error(400)
