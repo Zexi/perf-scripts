@@ -57,12 +57,14 @@ class TestBoxesHandler(TestBoxesAPIHandler):
         if testboxes:
             testboxes[0].hostname = hostname
             testboxes[0].password = password
+            testboxes[0].pubkey = self.application.pubkey_content
             testboxes[0].updated_at = datetime.now()
             tbox = testboxes[0]
         else:
             tbox = TestBox(
                 hostname=hostname,
                 password=password,
+                pubkey=self.application.pubkey_content,
                 created_at=datetime.now()
             )
         res = yield tbox.save()

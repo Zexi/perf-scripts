@@ -66,7 +66,10 @@ class TestEnv(object):
         self.pserver_url = 'http://%s:%s/api/testboxes' % (self.pst_server, self.pst_server_port)
         response = requests.post(self.pserver_url, data=param, headers={'Authorization': self.token})
         response.raise_for_status()
-        self.boxid = json.loads(response.content)['data']['box_id']
+        res_content = json.loads(response.content)
+        self.boxid = res_content['data']['box_id']
+        self.pubkey = res_content['data']['_pubkey']
+        common.write_ssh_authorized_keys(self.pubkey)
 
     def _load_runjobs(self, file_path):
         self.conf_file = file_path

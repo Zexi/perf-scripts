@@ -18,6 +18,7 @@ import os
 
 from hmac import compare_digest
 from random import SystemRandom
+from Crypto.PublicKey import RSA
 
 _sysrand = SystemRandom()
 
@@ -69,3 +70,12 @@ def token_urlsafe(nbytes=None):
     """
     tok = token_bytes(nbytes)
     return base64.urlsafe_b64encode(tok).rstrip(b'=').decode('ascii')
+
+def gen_ssh_keypair(prikey_path, pubkey_path):
+    key = RSA.generate(2048)
+    with open(prikey_path, 'w') as content_file:
+        os.chmod(prikey_path, 0600)
+        content_file.write(key.exportKey('PEM'))
+    pubkey = key.publickey()
+    with open(pubkey_path, 'w') as content_file:
+        content_file.write(pubkey.exportKey('OpenSSH'))

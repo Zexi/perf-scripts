@@ -11,6 +11,7 @@ from tornado_json.routes import get_routes
 
 from pst import common
 from pst import influxdb_pst
+from pst import secrets
 from pservers import handlers
 from pservers import modules
 
@@ -63,6 +64,12 @@ class PServerApp(Application):
         )
         self.influxdb_client = influxdb_pst.conn(INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_USER, INFLUXDB_PASS, INFLUXDB_DBNAME)
         influxdb_pst.create_db(self.influxdb_client, INFLUXDB_DBNAME)
+        self.prikey_path = '%s/pst_ssh_prikey' % PST_SRC
+        self.pubkey_path = '%s/pst_ssh_pubkey' % PST_SRC
+        if not os.path.exists(self.prikey_path) or not os.path.exists(self.pubkey_path):
+            secrets.gen_ssh_keypair(self.prikey_path, self.pubkey_path)
+        self.prikey_content = open(self.prikey_path, 'r').read()
+        self.pubkey_content = open(self.pubkey_path, 'r').read()
         super(PServerApp, self).__init__(routes, settings, db_conn, generate_docs)
 
 

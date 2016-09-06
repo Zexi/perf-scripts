@@ -16,6 +16,7 @@ class TestBox(Document):
     box_id = StringField(required=True, default=lambda: uuid.uuid4().hex)
     hostname = StringField(required=True, max_length=200)
     password = StringField(required=True, max_length=200)
+    pubkey = StringField(required=True)
     created_at = StringField(default=datetime.datetime.now().isoformat)
     updated_at = StringField(default=datetime.datetime.now().isoformat)
     status = StringField(default='registered')

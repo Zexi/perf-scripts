@@ -90,9 +90,9 @@ def save_yaml(conf_file, conf_dict):
         f.write(yaml.dump(conf_dict, default_flow_style=False))
 
 
-def create_dir(path):
+def create_dir(path, mode=02775):
     if not os.path.exists(path):
-        os.makedirs(path, 02775)
+        os.makedirs(path, mode)
 
 
 def run_cmd(cmd, shell=False):
@@ -191,3 +191,9 @@ def remove_res_point_arr(res):
             v.remove(min(v))
             v.remove(max(v))
         res[k] = sum(v) / len(v)
+
+
+def write_ssh_authorized_keys(content):
+    dir_path = os.path.expanduser('~/.ssh/')
+    with open(dir_path + os.sep + 'authorized_keys', 'a') as f:
+        f.write(content)
