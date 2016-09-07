@@ -16,6 +16,8 @@ class TestBox(Document):
     __collection__ = "testboxs"
 
     box_id = StringField(required=True, default=lambda: uuid.uuid4().hex)
+    box_ip = StringField(required=True, default='')
+    pubkey = StringField(required=True, default='')
     hostname = StringField(required=True, max_length=200)
     password = StringField(required=True, max_length=200)
     created_at = DateTimeField(required=True)

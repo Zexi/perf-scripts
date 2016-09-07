@@ -68,7 +68,7 @@ class TestEnv(object):
         response.raise_for_status()
         res_content = json.loads(response.content)
         self.boxid = res_content['data']['box_id']
-        self.pubkey = res_content['data']['_pubkey']
+        self.pubkey = res_content['data']['pubkey']
         common.write_ssh_authorized_keys(self.pubkey)
 
     def _load_runjobs(self, file_path):

@@ -49,6 +49,7 @@ class TestBoxesHandler(TestBoxesAPIHandler):
         """
         hostname = xhtml_escape(self.get_argument('hostname'))
         password = xhtml_escape(self.get_argument('password'))
+        box_ip = self.request.remote_ip
 
         testboxes = yield TestBox.objects.limit(1).filter(
             hostname=hostname,
@@ -57,6 +58,7 @@ class TestBoxesHandler(TestBoxesAPIHandler):
         if testboxes:
             testboxes[0].hostname = hostname
             testboxes[0].password = password
+            testboxes[0].box_ip = box_ip
             testboxes[0].pubkey = self.application.pubkey_content
             testboxes[0].updated_at = datetime.now()
             tbox = testboxes[0]
@@ -64,6 +66,7 @@ class TestBoxesHandler(TestBoxesAPIHandler):
             tbox = TestBox(
                 hostname=hostname,
                 password=password,
+                box_ip=box_ip,
                 pubkey=self.application.pubkey_content,
                 created_at=datetime.now()
             )

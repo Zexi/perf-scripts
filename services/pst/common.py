@@ -195,5 +195,8 @@ def remove_res_point_arr(res):
 
 def write_ssh_authorized_keys(content):
     dir_path = os.path.expanduser('~/.ssh/')
-    with open(dir_path + os.sep + 'authorized_keys', 'a') as f:
-        f.write(content)
+    with open(dir_path + os.sep + 'authorized_keys', 'r+') as f:
+        dumplicate_found = any(content in line for line in f)
+        if not dumplicate_found:
+            f.seek(0, os.SEEK_END)
+            f.write(content + '\n')
