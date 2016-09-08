@@ -2,6 +2,7 @@
 
 import os
 import os.path
+import json
 import tornado
 import tornado.httpserver
 import tornado.ioloop
@@ -9,6 +10,8 @@ import tornado.web
 import tornado.options
 
 from tornado.options import define, options
+from tornado_json.application import Application
+from tornado_json.routes import get_routes
 
 from pst import common
 from tboxs.testcase import TestEnv
@@ -20,18 +23,23 @@ define("run_job_files", default=[PST_SRC+'/etc/autorun_conf.yaml'],
        multiple=True, help="specify run jos' files")
 
 
-class Application(tornado.web.Application):
-    def __init__(self):
-        handlers = [
+class TboxApp(Application):
+    def __init__(self, api_routes, db_conn=None, generate_docs=False):
+        routes = [
             (r'/', MainHandler),
         ]
+        routes += api_routes
+        print("Routes\n========\n\n" + json.dumps(
+            [(url, repr(rh)) for url, rh in routes],
+            indent=2
+        ))
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), 'tboxs/templates'),
             static_path=os.path.join(os.path.dirname(__file__), 'tboxs/static'),
             debug=True,)
         self.test_env_list = [TestEnv(run_job_file) for run_job_file
                               in options.run_job_files]
-        super(Application, self).__init__(handlers, **settings)
+        super(TboxApp, self).__init__(routes, settings, db_conn, generate_docs)
 
 
 class MainHandler(tornado.web.RequestHandler):
@@ -48,9 +56,10 @@ _default_testenv_list = None
 
 
 def main():
+    import tboxs
     global _default_testenv_list
     tornado.options.parse_command_line()
-    app = Application()
+    app = TboxApp(get_routes(tboxs))
     _default_testenv_list = app.test_env_list
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(options.port, address='127.0.0.1')

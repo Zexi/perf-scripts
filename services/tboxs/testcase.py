@@ -46,12 +46,16 @@ class TestJob(object):
         json_data = self.__str__()
         response = requests.post(api_url, data=json_data, headers={'Authorization': self.token})
         response.raise_for_status()
+        self.jobid = json.loads(response.content)['data']['job_id']
 
     def save_origin_job(self):
         common.save_yaml(self.origin_job_file, self.origin_desc)
 
     def __str__(self):
         return common.to_json(self.__dict__)
+
+    def to_json(self):
+        return self.__str__()
 
     __repr__ = __str__
 
@@ -124,3 +128,10 @@ class TestEnv(object):
 
     def upload_job_status(self):
         pass
+
+    def find_job(self, jobid):
+        for job in self.runjobs:
+            if job.jobid == jobid:
+                return job
+        else:
+            return None
