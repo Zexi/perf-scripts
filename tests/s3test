@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd $BENCHMARK_ROOT/s3test || exit
+
+cmd ./start.sh
