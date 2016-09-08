@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+import sys
+import re
+
+for line in sys.stdin:
+    nw_get_m = re.search(r'^neiwang-get-time 64KB (\d+.\d+) (\d+) (\d+) (\d+)', line)
+    nw_put_m = re.search(r'^neiwang-put-time 64KB (\d+.\d+) (\d+) (\d+) (\d+)', line)
+    ww_get_m = re.search(r'^waiwang-get-time 64KB (\d+.\d+) (\d+) (\d+) (\d+)', line)
+    ww_put_m = re.search(r'^waiwang-put-time 64KB (\d+.\d+) (\d+) (\d+) (\d+)', line)
+
+    if nw_get_m:
+        print('nw.get.latency: {}'.format(nw_get_m.group(1)))
+        print('nw.get.latency.TP60: {}'.format(nw_get_m.group(2)))
+        print('nw.get.latency.TP80: {}'.format(nw_get_m.group(3)))
+        print('nw.get.latency.TP90: {}'.format(nw_get_m.group(4)))
+    if nw_put_m:
+        print('nw.put.latency: {}'.format(nw_put_m.group(1)))
+        print('nw.put.latency.TP60: {}'.format(nw_put_m.group(2)))
+        print('nw.put.latency.TP80: {}'.format(nw_put_m.group(3)))
+        print('nw.put.latency.TP90: {}'.format(nw_put_m.group(4)))
+    if ww_get_m:
+        print('ww.get.latency: {}'.format(ww_get_m.group(1)))
+        print('ww.get.latency.TP60: {}'.format(ww_get_m.group(2)))
+        print('ww.get.latency.TP80: {}'.format(ww_get_m.group(3)))
+        print('ww.get.latency.TP90: {}'.format(ww_get_m.group(4)))
+    if ww_put_m:
+        print('ww.put.latency: {}'.format(ww_put_m.group(1)))
+        print('ww.put.latency.TP60: {}'.format(ww_put_m.group(2)))
+        print('ww.put.latency.TP80: {}'.format(ww_put_m.group(3)))
+        print('ww.put.latency.TP90: {}'.format(ww_put_m.group(4)))
