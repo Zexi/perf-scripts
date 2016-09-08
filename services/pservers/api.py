@@ -1,13 +1,18 @@
 import json
+import logging
 from datetime import datetime
 from tornado.escape import xhtml_escape
+from tornado import gen
 from tornado_json.requesthandlers import APIHandler
 from tornado_json.gen import coroutine
 
 from pservers.models import TestBox
 from pservers.models import TestJob
 from pservers.models import User
+from pservers.ansible_pst import AnsibleTask
+from pservers.ansible_pst import OPTIONS
 
+logger = logging.getLogger(__name__)
 
 class BaseAPIHandler(APIHandler):
     @coroutine
@@ -27,6 +32,36 @@ class BaseAPIHandler(APIHandler):
     @coroutine
     def prepare(self):
         yield self.authenticated()
+        self.ansible_options = OPTIONS(
+            listtags=False, listtasks=False, listhosts=False,
+            syntax=False, connection='ssh', module_path='',
+            forks=100, remote_user='root',
+            private_key_file=self.application.prikey_path,
+            ssh_common_args=None, ssh_extra_args=None,
+            sftp_extra_args=None, scp_extra_args=None,
+            become=False, become_method=None,
+            become_user='root', verbosity=None, check=False
+        )
+
+    @coroutine
+    def testbox_find(self, **search_dict):
+        testboxes = yield TestBox.objects.limit(1).filter(
+            **search_dict
+        ).find_all()
+
+        if not testboxes:
+            raise ValueError('Not found testbox: %s' % search_dict)
+        raise gen.Return(testboxes[0])
+
+    @coroutine
+    def testjob_find(self, **search_dict):
+        jobs = yield TestJob.objects.limit(1).filter(
+            **search_dict
+        ).find_all()
+
+        if not jobs:
+            raise ValueError('Not found testjob: %s' % search_dict)
+        raise gen.Return(jobs[0])
 
 
 class TestBoxesAPIHandler(BaseAPIHandler):
@@ -51,26 +86,25 @@ class TestBoxesHandler(TestBoxesAPIHandler):
         password = xhtml_escape(self.get_argument('password'))
         box_ip = self.request.remote_ip
 
-        testboxes = yield TestBox.objects.limit(1).filter(
+        testbox = yield self.testbox_find(
             hostname=hostname,
             password=password
-        ).find_all()
-        if testboxes:
-            testboxes[0].hostname = hostname
-            testboxes[0].password = password
-            testboxes[0].box_ip = box_ip
-            testboxes[0].pubkey = self.application.pubkey_content
-            testboxes[0].updated_at = datetime.now()
-            tbox = testboxes[0]
+        )
+        if testbox:
+            testbox.hostname = hostname
+            testbox.password = password
+            testbox.box_ip = box_ip
+            testbox.pubkey = self.application.pubkey_content
+            testbox.updated_at = datetime.now()
         else:
-            tbox = TestBox(
+            testbox = TestBox(
                 hostname=hostname,
                 password=password,
                 box_ip=box_ip,
                 pubkey=self.application.pubkey_content,
                 created_at=datetime.now()
             )
-        res = yield tbox.save()
+        res = yield testbox.save()
         print(res)
         self.set_status(201)
         self.success(res.to_son())
@@ -80,9 +114,10 @@ class TestBoxesIdHandler(TestBoxesAPIHandler):
     @coroutine
     def get(self, boxid):
         try:
-            boxid = self.current_user
-        except KeyError:
-            self.fail("No data on such make `{}`.".format(boxid))
+            testbox = yield self.testbox_find(box_id=boxid)
+            self.success(testbox.to_son())
+        except ValueError as e:
+            self.fail("No data on such make `{}`.".format(e))
 
 
 class TestJobsAPIHandler(BaseAPIHandler):
@@ -110,15 +145,14 @@ class TestJobsHandler(TestJobsAPIHandler):
         desc = hash_data['desc']
         status = hash_data['status']
 
-        jobs = yield TestJob.objects.limit(1).filter(
+        job = yield self.testjob_find(
             boxid=boxid, testcase=testcase,
             testbox=testbox, rootfs=rootfs,
             commit=commit, job_params=job_params,
-        ).find_all()
-        if jobs:
-            jobs[0].status = status
-            jobs[0].updated_at = datetime.now()
-            job = jobs[0]
+        )
+        if job:
+            job.status = status
+            job.updated_at = datetime.now()
         else:
             job = TestJob(
                 boxid=boxid, testcase=testcase,
@@ -132,3 +166,44 @@ class TestJobsHandler(TestJobsAPIHandler):
         print(res)
         self.set_status(201)
         self.success(res.to_son())
+
+
+class TestJobsIdHandler(TestJobsAPIHandler):
+    @coroutine
+    def get(self, jobid):
+        try:
+            testjob = yield self.testjob_find(job_id=jobid)
+            self.success(testjob.to_son())
+
+        except ValueError:
+            self.fail("No data on such make `{}`.".format(jobid))
+
+    @coroutine
+    def post(self, jobid):
+        pass
+
+
+class TestJobsAnsibleHandler(TestJobsHandler):
+    __url_names__ = []
+    __urls__ = [r"/api/testjobs/(?P<jobid>[a-zA-Z0-9_\-]+)/details/?$"]
+
+    @coroutine
+    def get(self, jobid):
+        try:
+            job = yield self.testjob_find(job_id=jobid)
+            testbox = yield self.testbox_find(box_id=job.boxid)
+            remote_ip = testbox.box_ip
+            module = 'uri'
+            uri_args = dict(
+                url='http://localhost:8686/api/jjobs/%s' % jobid,
+                method='GET', return_content='yes'
+            )
+            uri_task = AnsibleTask(
+                remote_ip, module, args=uri_args,
+                options=self.ansible_options
+            )
+            result = uri_task.ansible_play()
+            self.success(result)
+        except ValueError as e:
+            logger.warning("No data on such make `{}`.".format(e))
+            self.fail("No data on such make `{}`.".format(e))

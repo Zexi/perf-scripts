@@ -93,6 +93,12 @@ class TestBoxesHandler(BaseHandler):
         self.render('testbox.html')
 
 
+class TestJobsHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        self.render('testjob.html')
+
+
 class ResultsHandler(BaseHandler):
     executor = futures.ThreadPoolExecutor(max_workers=MAX_WORKERS)
 
