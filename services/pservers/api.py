@@ -86,17 +86,17 @@ class TestBoxesHandler(TestBoxesAPIHandler):
         password = xhtml_escape(self.get_argument('password'))
         box_ip = self.request.remote_ip
 
-        testbox = yield self.testbox_find(
-            hostname=hostname,
-            password=password
-        )
-        if testbox:
+        try:
+            testbox = yield self.testbox_find(
+                hostname=hostname,
+                password=password
+            )
             testbox.hostname = hostname
             testbox.password = password
             testbox.box_ip = box_ip
             testbox.pubkey = self.application.pubkey_content
             testbox.updated_at = datetime.now()
-        else:
+        except ValueError:
             testbox = TestBox(
                 hostname=hostname,
                 password=password,
@@ -145,15 +145,15 @@ class TestJobsHandler(TestJobsAPIHandler):
         desc = hash_data['desc']
         status = hash_data['status']
 
-        job = yield self.testjob_find(
-            boxid=boxid, testcase=testcase,
-            testbox=testbox, rootfs=rootfs,
-            commit=commit, job_params=job_params,
-        )
-        if job:
+        try:
+            job = yield self.testjob_find(
+                boxid=boxid, testcase=testcase,
+                testbox=testbox, rootfs=rootfs,
+                commit=commit, job_params=job_params
+            )
             job.status = status
             job.updated_at = datetime.now()
-        else:
+        except ValueError:
             job = TestJob(
                 boxid=boxid, testcase=testcase,
                 testbox=testbox, rootfs=rootfs,
