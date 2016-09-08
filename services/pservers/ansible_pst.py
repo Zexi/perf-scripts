@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import logging
+
 from collections import namedtuple
 from ansible.parsing.dataloader import DataLoader
 from ansible.vars import VariableManager
@@ -7,6 +9,8 @@ from ansible.inventory import Inventory
 from ansible.playbook.play import Play
 from ansible.executor.task_queue_manager import TaskQueueManager
 from ansible.plugins.callback import CallbackBase
+
+logger = logging.getLogger(__name__)
 
 OPTIONS = namedtuple(
     'Options', [
@@ -30,6 +34,9 @@ class ResultCallback(CallbackBase):
     def v2_runner_on_ok(self, result, **kwargs):
         host = result._host
         self.task_obj.return_results = {host.name: result._result}
+
+    def v2_runner_on_failed(self, result, **kwargs):
+        logger.error('Ansible SSH {host} Failed: {result}'.format(host=result._host, result=result._result))
 
 
 class AnsibleTask(object):
@@ -92,5 +99,8 @@ if __name__ == '__main__':
                 verbosity=None, check=False
             )
 
-    test_task = AnsibleTask('192.168.59.104', options=test_option)
-    test_task.ansible_play()
+    # test_task = AnsibleTask('192.168.59.104', options=test_option)
+    # test_task.ansible_play()
+    uri_args = dict(url='http://localhost:8686/api/jobs', method='GET', return_content='yes')
+    test_uri_task = AnsibleTask('192.168.59.104', 'uri', args=uri_args, options=test_option)
+    print test_uri_task.ansible_play()
