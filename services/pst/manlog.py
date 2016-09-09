@@ -54,6 +54,7 @@ logger = logging.getLogger()
 mailuser = os.environ.get('PST_MAIL_USER', None)
 mailpasswd = os.environ.get('PST_MAIL_PASSWD', None)
 smtpserver = os.environ.get('PST_MAIL_SMTP', None)
+smtpport = os.environ.get('PST_MAIL_PORT', 465)
 toaddrs = os.environ.get('PST_MAIL_TOADDRS', None)
 subject = os.environ.get('PST_MAIL_SUBJECT', u"[PST][log]")
 
@@ -68,7 +69,7 @@ if mailuser and mailpasswd and smtpserver:
     else:
         tbox_type = 'pm'
     subject_suffix = ' %s  %s  %s  %s' % (hostname, tbox_type, rootfs, commit)
-    mail_handler = SSLSMTPHandler(mailhost=(smtpserver, 465),
+    mail_handler = SSLSMTPHandler(mailhost=(smtpserver, int(smtpport)),
                                   fromaddr=mailuser,
                                   toaddrs=toaddrs,
                                   subject=subject+subject_suffix,
