@@ -9,6 +9,9 @@ for line in sys.stdin:
     ww_get_m = re.search(r'^waiwang-get-time 64KB (\d+.\d+) (\d+) (\d+) (\d+)', line)
     ww_put_m = re.search(r'^waiwang-put-time 64KB (\d+.\d+) (\d+) (\d+) (\d+)', line)
 
+    nw_get_band_m = re.search(r'^neiwang-get-band 64MB (\d+.\d+) (\d+.\d+) (\d+) (\d+) (\d+)', line)
+    nw_put_band_m = re.search(r'^neiwang-put-band 64MB (\d+.\d+) (\d+.\d+) (\d+) (\d+) (\d+)', line)
+
     if nw_get_m:
         print('nw.get.latency: {}'.format(nw_get_m.group(1)))
         print('nw.get.latency.TP60: {}'.format(nw_get_m.group(2)))
@@ -29,3 +32,15 @@ for line in sys.stdin:
         print('ww.put.latency.TP60: {}'.format(ww_put_m.group(2)))
         print('ww.put.latency.TP80: {}'.format(ww_put_m.group(3)))
         print('ww.put.latency.TP90: {}'.format(ww_put_m.group(4)))
+    if nw_get_band_m:
+        print('nw.get_band.latency: {}'.format(nw_get_band_m.group(1)))
+        print('nw.get_band.band: {}'.format(nw_get_band_m.group(2)))
+        print('nw.get_band.latency.TP60: {}'.format(nw_get_band_m.group(3)))
+        print('nw.get_band.latency.TP80: {}'.format(nw_get_band_m.group(4)))
+        print('nw.get_band.latency.TP90: {}'.format(nw_get_band_m.group(5)))
+    if nw_put_band_m:
+        print('nw.put_band.latency: {}'.format(nw_put_band_m.group(1)))
+        print('nw.put_band.band: {}'.format(nw_put_band_m.group(2)))
+        print('nw.put_band.latency.TP60: {}'.format(nw_put_band_m.group(3)))
+        print('nw.put_band.latency.TP80: {}'.format(nw_put_band_m.group(4)))
+        print('nw.put_band.latency.TP90: {}'.format(nw_put_band_m.group(5)))
