@@ -145,6 +145,7 @@ class ResultsHandler(BaseHandler):
                 result.update_influxdb(
                     testcase, start_time, result_path,
                     influxdb_client, influxdb_tags)
+                os.remove(result_path)
             except Exception:
                 tb = traceback.format_exc()
                 err_str = '%s\n%s' % (influxdb_tags, tb)
