@@ -1,4 +1,5 @@
 import os
+import shutil
 import logging
 import tornado.web
 from tornado.gen import coroutine
@@ -145,7 +146,7 @@ class ResultsHandler(BaseHandler):
                 result.update_influxdb(
                     testcase, start_time, result_path,
                     influxdb_client, influxdb_tags)
-                os.remove(result_path)
+                shutil.rmtree(result_path)
             except Exception:
                 tb = traceback.format_exc()
                 err_str = '%s\n%s' % (influxdb_tags, tb)
