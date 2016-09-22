@@ -38,8 +38,10 @@ class TaskRunner(object):
         job.upload_info()
         run_cmd = [PST_SRC+'/bin/pst', 'run', '-j', job.job_file,
                    '-u', upload_url]
+        cleanup_cmd = [PST_SRC+'/sbin/cleanup', '-d', '3', '/results']
         logger.info("(run_one_job: %s)" % run_cmd)
         try:
+            common.run_cmd(cleanup_cmd)
             job.start_time = time.strftime(TIMEFORMAT, time.localtime())
             common.run_cmd(run_cmd)
             job.status = 'finished'
