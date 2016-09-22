@@ -38,7 +38,7 @@ class TaskRunner(object):
         job.upload_info()
         run_cmd = [PST_SRC+'/bin/pst', 'run', '-j', job.job_file,
                    '-u', upload_url]
-        cleanup_cmd = [PST_SRC+'/sbin/cleanup', '-d', '3', '/results']
+        cleanup_cmd = [PST_SRC+'/sbin/cleanup', '-d', '1', '/results']
         logger.info("(run_one_job: %s)" % run_cmd)
         try:
             common.run_cmd(cleanup_cmd)
