@@ -5,8 +5,10 @@ import common
 import influxdb_pst
 
 
-def update_influxdb(testcase_name, start_time, result_path, influxdb_client, influxdb_tags):
-    if testcase_name in ["fio-vm", "fio-ebs"]:
+def update_influxdb(testcase_name, start_time, result_path,
+                    influxdb_client, influxdb_tags):
+    if testcase_name in ["fio-vm", "fio-ebs", "fio-tp",
+                         "fio-iops", "fio-lat"]:
         testcase_name = 'fio'
 
     result_json_file = testcase_name + '.json'
