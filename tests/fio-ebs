@@ -15,20 +15,6 @@ filename=$filename
 numjobs=1
 group_reporting
 
-[seq-write]
-ioengine=psync
-blocksize=1M
-rw=write
-size=10G
-stonewall
-
-[seq-read]
-ioengine=psync
-blocksize=1M
-rw=read
-size=10G
-stonewall
-
 [rand-write]
 rw=randwrite
 ioengine=libaio
@@ -43,6 +29,20 @@ ioengine=libaio
 blocksize=4k
 iodepth=32
 runtime=$runtime
+stonewall
+
+[seq-write]
+ioengine=psync
+blocksize=1M
+rw=write
+size=10G
+stonewall
+
+[seq-read]
+ioengine=psync
+blocksize=1M
+rw=read
+size=10G
 stonewall
 
 [seq-write-lat]
