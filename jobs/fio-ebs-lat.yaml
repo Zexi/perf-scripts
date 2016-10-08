@@ -1,0 +1,7 @@
+testcase: fio-lat
+category: benchmark
+
+fio:
+  filename: /dev/vdd
+  host_cache_mode: none
+  vm_disk_type: ebs

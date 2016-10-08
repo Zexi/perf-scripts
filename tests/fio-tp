@@ -1,0 +1,31 @@
+#!/bin/sh
+
+: ${runtime:=20}
+
+jobfile=fio_tp
+[ "${jobfile#*__}" != "$jobfile" ] && {
+    echo "error composing $jobfile: missing options" >&2
+    exit 1
+}
+
+cat > $jobfile <<EOF
+[global]
+direct=1
+filename=$filename
+numjobs=1
+group_reporting
+
+[seq-write]
+ioengine=psync
+blocksize=1M
+rw=write
+size=10G
+stonewall
+
+[seq-read]
+ioengine=psync
+blocksize=1M
+rw=read
+size=10G
+stonewall
+EOF

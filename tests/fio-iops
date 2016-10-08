@@ -1,0 +1,33 @@
+#!/bin/sh
+
+: ${runtime:=20}
+
+jobfile=fio_iops
+[ "${jobfile#*__}" != "$jobfile" ] && {
+    echo "error composing $jobfile: missing options" >&2
+    exit 1
+}
+
+cat > $jobfile <<EOF
+[global]
+direct=1
+filename=$filename
+numjobs=1
+group_reporting
+
+[rand-write]
+rw=randwrite
+ioengine=libaio
+blocksize=4k
+iodepth=32
+runtime=$runtime
+stonewall
+
+[rand-read]
+rw=randread
+ioengine=libaio
+blocksize=4k
+iodepth=32
+runtime=$runtime
+stonewall
+EOF

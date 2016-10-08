@@ -1,0 +1,7 @@
+testcase: fio-lat
+category: benchmark
+
+fio:
+  filename: /dev/vdc
+  host_cache_mode: none
+  vm_disk_type: hdd
