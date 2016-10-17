@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+import sys
+import re
+
+for line in sys.stdin:
+    mr = re.search(r'.*read.*(\d+.\d+) us$', line)
+    mw = re.search(r'.*write.*(\d+.\d+) us$', line)
+
+    if mr:
+        print 'read.lat: ' + mr.group(1)
+    if mw:
+        print 'write.lat: ' + mw.group(1)

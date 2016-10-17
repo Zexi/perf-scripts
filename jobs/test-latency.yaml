@@ -1,0 +1,6 @@
+testcase: test-latency
+category: benchmark
+
+test-latency:
+  filename: /dev/vdd
+  type: ebs
