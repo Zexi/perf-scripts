@@ -1,7 +1,8 @@
 #!/bin/sh
 # - type
 
-command="$RESULT_ROOT/sbin/test-latency $filename"
+PST_SRC="$(dirname $(dirname $0))"
+command="$PST_SRC/sbin/test-latency $filename"
 date=$(date +'%F %T')
 echo "$date $command" | tee -a $RESULT_ROOT/reproduce.sh
 exec $command
