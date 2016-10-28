@@ -1,5 +1,4 @@
 testcase: unixbench
-category: benchmark
 
 nr_task:
   - 1

@@ -1,4 +1,4 @@
 testcase: unixbench
-category: benchmark
 
 unixbench:
+  test:
