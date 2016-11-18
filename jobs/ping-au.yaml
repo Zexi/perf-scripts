@@ -1,0 +1,6 @@
+testcase: ping
+
+ping:
+  count: 50
+  host: 223.27.28.48
+

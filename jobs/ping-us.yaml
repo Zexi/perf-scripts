@@ -1,0 +1,6 @@
+testcase: ping
+
+ping:
+  count: 50
+  host: 104.239.220.248
+
