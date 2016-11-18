@@ -3,3 +3,5 @@ Tornado-JSON
 coloredlogs
 futures
 pytz
+shellwords
+PyYAML
