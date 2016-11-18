@@ -3,4 +3,5 @@ testcase: ping
 ping:
   count: 50
   host: 186.192.81.5
+  tag: BR
 

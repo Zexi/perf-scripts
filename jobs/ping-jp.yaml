@@ -3,4 +3,4 @@ testcase: ping
 ping:
   count: 50
   host: 212.58.246.90
-
+  tag: JP

@@ -3,4 +3,5 @@ testcase: ping
 ping:
   count: 50
   host: 203.198.164.6
+  tag: HK
 
