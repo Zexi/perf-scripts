@@ -1,0 +1,25 @@
+runtime: 1
+
+server:
+  hostname: 172.30.26.228
+  port: 18686
+  res: results
+
+jobs:
+  - ping-au
+  - ping-br
+  - ping-hk
+  - ping-jp
+  - ping-uk
+  - ping-us
+
+token: R5S31rzEM4rUyobhXSRYRA
+password: secretpasswd
+
+# config for test which should sync run
+sync:
+  dir: ./workspace/tmp
+  jobs:
+    - all
+    - fio-vm
+  timeout: 60
