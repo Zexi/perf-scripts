@@ -2,6 +2,7 @@ import os
 import logging
 import requests
 import json
+from time import sleep
 
 from pst import common
 
@@ -66,14 +67,19 @@ class TestEnv(object):
         self._get_boxid()
 
     def _get_boxid(self):
-        param = {'hostname': self.testbox, 'password': self.password}
-        self.pserver_url = 'http://%s:%s/api/testboxes' % (self.pst_server, self.pst_server_port)
-        response = requests.post(self.pserver_url, data=param, headers={'Authorization': self.token})
-        response.raise_for_status()
-        res_content = json.loads(response.content)
-        self.boxid = res_content['data']['box_id']
-        self.pubkey = res_content['data']['pubkey']
-        common.write_ssh_authorized_keys(self.pubkey)
+        try:
+            param = {'hostname': self.testbox, 'password': self.password}
+            self.pserver_url = 'http://%s:%s/api/testboxes' % (self.pst_server, self.pst_server_port)
+            response = requests.post(self.pserver_url, data=param, headers={'Authorization': self.token})
+            response.raise_for_status()
+            res_content = json.loads(response.content)
+            self.boxid = res_content['data']['box_id']
+            self.pubkey = res_content['data']['pubkey']
+            common.write_ssh_authorized_keys(self.pubkey)
+        except Exception as e:
+            logger.error('TestEnv get box id error: %s, try revoke it after 3s' % e)
+            sleep(3)
+            self._get_boxid()
 
     def _load_runjobs(self, file_path):
         self.conf_file = file_path
