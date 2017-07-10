@@ -53,9 +53,13 @@ class TaskRunner(object):
             job.upload_info()
 
     def reload_sleep(self):
-        self.test_env.reload()
         self.int_runtime = int(self.test_env.int_runtime)
-        time.sleep(self.int_runtime)
+        try:
+            self.test_env.reload()
+        except Exception as e:
+            logger.error('Reload sleep error: %s' % e)
+        finally:
+            time.sleep(self.int_runtime)
 
     @run_on_executor
     def per_func(self):
@@ -63,7 +67,10 @@ class TaskRunner(object):
             self.reload_sleep()
             for testjob in self.test_env.runjobs:
                 logger.info("%s====" % testjob)
-                self.run_one_job(testjob)
+                try:
+                    self.run_one_job(testjob)
+                except Exception as e:
+                    logger.error('run one job error: %s' % e)
 
     @gen.coroutine
     def start(self):
